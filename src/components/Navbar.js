@@ -2,18 +2,15 @@ import React, { useState, useEffect } from "react";
 import "../styles/Navbar.css";
 import logo from "../assets/2.png"; 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faUser, faHeart, faShoppingCart, faBars } from "@fortawesome/free-solid-svg-icons";
+import { faSearch, faUser, faHeart, faShoppingCart, faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 50);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -23,11 +20,15 @@ const Navbar = () => {
   return (
     <nav className={`navbar ${isScrolled ? "scrolled" : ""}`}>
       <div className="nav-left">
-        <FontAwesomeIcon icon={faBars} className="menu-icon" />
+        <FontAwesomeIcon 
+          icon={isMenuOpen ? faTimes : faBars} 
+          className="menu-icon" 
+          onClick={() => setIsMenuOpen(!isMenuOpen)} 
+        />
         <img src={logo} alt="SneakerNest Logo" className="nav-logo" />
       </div>
 
-      <ul className="nav-links">
+      <ul className={`nav-links ${isMenuOpen ? "open" : ""}`}>
         <li><a href="/sneakers">Sneakers</a></li>
         <li><a href="/casual">Casual</a></li>
         <li><a href="/boots">Boots</a></li>
@@ -40,7 +41,6 @@ const Navbar = () => {
         <FontAwesomeIcon icon={faHeart} className="icon" />
         <FontAwesomeIcon icon={faShoppingCart} className="icon" />
       </div>
-
     </nav>
   );
 };

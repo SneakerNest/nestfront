@@ -1,4 +1,4 @@
-/* Navbar Styling */
+/* 🌟 Navbar Styling */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -15,79 +15,105 @@
   box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Logo Styling - Bigger Size */
+/* 🌟 Scrolled Navbar Effect */
+.navbar.scrolled {
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 🌟 Logo Styling */
 .nav-logo {
-  height: 100px; /* Increase logo size */
+  height: 80px; /* Adjusted for better scaling */
   width: auto;
-  margin-left: 20px;
+  margin-left: 10px;
 }
 
-/* Navigation Links */
+/* 🌟 Navigation Links - Horizontal Layout */
 .nav-links {
-  display: flex;
-  gap: 35px; /* Adds spacing between links */
-  list-style: none;
-  margin: 0 auto; /* Centers the links */
+  display: flex; /* Ensures horizontal alignment */
+  gap: 30px; /* Spacing between links */
+  list-style: none; /* Removes bullets */
+  margin: 0;
   padding: 0;
+  align-items: center;
 }
 
-.nav-links li {
-  font-size: 20px;
-  font-weight: bold;
-}
-
+/* 🌟 Navigation Links - Style */
 .nav-links li a {
   text-decoration: none;
+  font-size: 18px;
+  font-weight: bold;
   color: black;
-  transition: color 0.3s;
+  transition: color 0.3s ease-in-out;
 }
 
 .nav-links li a:hover {
   color: red;
 }
 
-/* Navbar Icons - Fixing Alignment */
+/* 🌟 Navbar Icons */
 .nav-icons {
   display: flex;
+  gap: 20px;
   align-items: center;
-  gap: 25px; /* Fix spacing between icons */
-  position: absolute;
-  right: 40px; /* Align to the right */
-  top: 50%;
-  transform: translateY(-50%);
+  font-size: 22px;
 }
 
-/* Icons Styling */
+/* 🌟 Icons - Hover Effect */
 .icon {
-  font-size: 26px; /* Bigger icon size */
-  color: black;
   cursor: pointer;
-  transition: transform 0.2s ease-in-out, color 0.3s;
+  transition: color 0.3s, transform 0.2s ease-in-out;
 }
 
 .icon:hover {
-  transform: scale(1.1);
   color: red;
+  transform: scale(1.1);
 }
 
-/* Responsive Design */
+/* 🌟 Mobile Menu Icon */
+.menu-icon {
+  display: none; /* Hidden on larger screens */
+  font-size: 26px;
+  cursor: pointer;
+}
+
+/* 🌟 Responsive Design for Mobile View */
 @media (max-width: 1024px) {
   .navbar {
     padding: 10px 20px;
   }
 
+  /* Reduce logo size for smaller screens */
   .nav-logo {
-    height: 150px; /* Reduce size on smaller screens */
+    height: 60px;
   }
 
+  /* Mobile Menu - Initially Hidden */
   .nav-links {
-    gap: 15px;
-    font-size: 16px;
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    background: white;
+    padding: 15px;
+    text-align: center;
   }
 
+  /* Show menu when "open" class is added */
+  .nav-links.open {
+    display: flex;
+  }
+
+  /* Display Mobile Menu Icon */
+  .menu-icon {
+    display: block;
+  }
+
+  /* Adjust Navbar Icons for Mobile */
   .nav-icons {
     gap: 15px;
     right: 20px;
   }
 }
-
