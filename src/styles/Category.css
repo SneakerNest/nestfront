@@ -1,0 +1,43 @@
+.category-section {
+    text-align: center;
+    padding: 50px 0;
+}
+
+.category-title {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.category-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.category-card {
+    width: 220px;
+    height: 280px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    overflow: hidden;
+    text-align: center;
+    transition: transform 0.3s ease-in-out;
+}
+
+.category-card:hover {
+    transform: scale(1.05);
+}
+
+.category-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.category-name {
+    font-size: 1.2rem;
+    margin-top: 10px;
+    font-weight: bold;
+}
