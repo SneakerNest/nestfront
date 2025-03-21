@@ -1,0 +1,56 @@
+.newest {
+    text-align: center;
+    padding: 50px 0;
+}
+
+.newest-title {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+
+.newest-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.newest-card {
+    width: 220px;
+    height: 280px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    overflow: hidden;
+    text-align: center;
+    transition: transform 0.3s ease-in-out;
+}
+
+.newest-card:hover {
+    transform: scale(1.05);
+}
+
+.newest-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.newest-name {
+    font-size: 1.2rem;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.newest-price {
+    font-size: 1rem;
+    color: #ff4d4d;
+    font-weight: bold;
+}
+
