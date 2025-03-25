@@ -1,43 +1,45 @@
 .hero {
     position: relative;
     width: 100%;
-    height: auto; 
+    height: 650px; 
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden; 
-    padding-top: 120px;
+    padding-top: 250px;
 }
 
 .hero-image {
-    width: 300%;
+    width: 100%;
     height: auto;
     object-fit: contain;
 }
 
 .hero-text {
     position: absolute;
-    top: 15%;
+    top: 12%;
     left: 2%; 
     color: black;
     text-align: left; 
+    padding-top: 20px;
 }
 
 .hero-title {
-    font-size: 10rem; 
+    font-size: 9.5rem; 
     font-weight: bold;
     margin: 0;
+    line-height: 1;
 }
 
 .hero-description {
-    font-size: 1.5rem;
-    margin-top: 1px;
-    line-height: 1.5;
+    font-size: 1.3rem;
+    margin-top: 0.5px;
+    line-height: 1;
     max-width: none; 
     white-space: nowrap;
+    padding-bottom: 10px;
 }
 
 .sneakernest {
     font-weight: bold;
 }
-
