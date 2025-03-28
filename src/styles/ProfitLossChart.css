@@ -1,0 +1,16 @@
+.chart-container {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .chart-container h2 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 1.2rem;
+    color: black;
+  }

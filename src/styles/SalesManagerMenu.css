@@ -1,0 +1,36 @@
+.container {
+    padding: 150px;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .h1 {
+    margin-bottom: 30px;
+    font-size: 32px;
+    font-weight: bold;
+  }
+  
+  .tabs {
+    margin-bottom: 20px;
+  }
+  
+  .tabs button {
+    margin-right: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background: #e0e0e0;
+    border-radius: 4px;
+  }
+  
+  .tabs .active {
+    background-color: red;
+    color: white;
+    font-weight: bold;
+  }
+  
+  .tab-content {
+    margin-top: 20px;
+  }
+  
