@@ -1,64 +1,67 @@
 .login-container {
-  position: relative;
-  width: 100%;
+  background-image: url('../assets/background.jpg'); /* Update path if needed */
+  background-size: cover;
+  background-position: center;
   height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
-/* Background Image */
-.background-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  object-fit: cover;
-  z-index: -1; /* Send it behind other elements */
-}
 .login-box {
-  background: rgba(255, 255, 255, 0.9);
-  padding: 30px;
-  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 40px 30px;
+  border-radius: 12px;
   text-align: center;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.logo {
-  width: 150px;
-  margin-bottom: 10px;
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
-h2 {
-  font-size: 24px;
-  margin-bottom: 10px;
+.logo-container img {
+  width: 140px;
 }
 
-input {
+.login-box input {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   margin: 10px 0;
+  border-radius: 6px;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  font-size: 16px;
 }
 
-.login-btn {
-  width: 100%;
+.login-box button {
   background-color: red;
   color: white;
+  width: 100%;
+  padding: 12px;
   border: none;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 5px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
-}
-
-p {
+  transition: background-color 0.3s ease-in-out;
   margin-top: 10px;
 }
 
-p a {
+.login-box button:hover {
+  background-color: #d60000;
+}
+
+.login-box p {
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.login-box a {
   color: red;
+  font-weight: bold;
   text-decoration: none;
 }

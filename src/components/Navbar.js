@@ -1,60 +1,115 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom"; // <-- Important if using React Router
-import "../styles/Navbar.css";
-import logo from "../assets/2.png";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useState } from 'react';
 import {
-  faSearch,
-  faUser,
-  faHeart,
-  faShoppingCart,
-  faBars,
-  faTimes
-} from "@fortawesome/free-solid-svg-icons";
+  ShoppingCart,
+  Heart,
+  Menu,
+  Search,
+  User,
+  X,
+  ChevronDown
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
+  const [searchValue, setSearchValue] = useState(""); // ✅ NEW
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const toggleSidebar = () => setShowSidebar(!showSidebar);
+  const toggleCategories = () => setShowCategories(!showCategories);
 
   return (
-    <nav className={`navbar ${isScrolled ? "scrolled" : ""}`}>
-      <div className="nav-left">
-        <FontAwesomeIcon
-          icon={isMenuOpen ? faTimes : faBars}
-          className="menu-icon"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        />
-        
-        {/* Wrap the logo in a Link so it navigates to the homepage on click */}
-        <Link to="/">
-          <img src={logo} alt="SneakerNest Logo" className="nav-logo" />
-        </Link>
+    <>
+      <nav className="w-full bg-white text-black shadow-md px-6 py-4 flex items-center justify-between fixed top-0 z-50">
+        {/* Left Section */}
+        <div className="flex items-center space-x-4">
+          <img src={require("../assets/2.png")} alt="Logo" className="h-16 w-auto" />
+        </div>
+
+        {/* Search Bar */}
+        <div className="flex-1 mx-6 max-w-lg">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  navigate(`/product-page?search=${encodeURIComponent(searchValue)}`);
+                }
+              }}
+              className="w-full pl-10 pr-4 py-2 rounded-full bg-gray-100 text-black focus:outline-none"
+              placeholder="Search sneakers..."
+            />
+            <Search className="absolute left-3 top-2.5 h-5 w-5 text-black" />
+          </div>
+        </div>
+
+        {/* Right Icons */}
+        <div className="flex items-center space-x-6">
+          <Heart className="cursor-pointer hover:text-red-600 transition-colors" onClick={() => navigate('/wishlist')}/>
+          <ShoppingCart className="cursor-pointer hover:text-red-600 transition-colors" />
+          <User className="cursor-pointer hover:text-red-600 transition-colors" onClick={() => navigate('/login')} />
+          <Menu className="cursor-pointer hover:text-red-600 transition-colors" onClick={toggleSidebar} />
+        </div>
+      </nav>
+
+      {/* Sidebar Menu */}
+      <div
+        className={`fixed top-0 ${showSidebar ? 'right-0' : '-right-full'} h-full w-64 bg-white shadow-lg z-40 transition-all duration-300 pt-28 px-6`}
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-bold text-black">MENU</h2>
+          <X className="cursor-pointer hover:text-red-600" onClick={toggleSidebar} />
+        </div>
+        <ul className="space-y-4">
+          <li
+            className="cursor-pointer hover:text-red-600 transition-colors"
+            onClick={() => {
+              navigate('/main-menu');
+              toggleSidebar();
+            }}
+          >
+            Main Menu
+          </li>
+          <li
+            className="cursor-pointer hover:text-red-600 transition-colors"
+            onClick={() => {
+              navigate('/product-page');
+              toggleSidebar();
+            }}
+          >
+            Product Page
+          </li>
+          <li
+            className="cursor-pointer hover:text-red-600 transition-colors flex items-center justify-between"
+            onClick={toggleCategories}
+          >
+            <span>Categories</span>
+            <ChevronDown className={`ml-2 transform transition-transform duration-300 ${showCategories ? 'rotate-180' : ''}`} />
+          </li>
+          {showCategories && (
+            <ul className="ml-4 mt-2 space-y-2 text-sm text-gray-700">
+              <li className="hover:text-red-600 cursor-pointer" onClick={() => navigate('/sneakers')}>Sneakers</li>
+              <li className="hover:text-red-600 cursor-pointer" onClick={() => navigate('/casual')}>Casual</li>
+              <li className="hover:text-red-600 cursor-pointer" onClick={() => navigate('/boots')}>Boots</li>
+              <li className="hover:text-red-600 cursor-pointer" onClick={() => navigate('/slippers-sandals')}>Slippers & Sandals</li>
+            </ul>
+          )}
+        </ul>
       </div>
 
-      <ul className={`nav-links ${isMenuOpen ? "open" : ""}`}>
-        <li><Link to="/sneakers">Sneakers</Link></li>
-        <li><Link to="/casual">Casual</Link></li>
-        <li><Link to="/boots">Boots</Link></li>
-        <li><Link to="/slippers">Slippers & Sandals</Link></li>
-      </ul>
-
-      <div className="nav-icons">
-        <FontAwesomeIcon icon={faSearch} className="icon" />
-        <FontAwesomeIcon icon={faUser} className="icon" />
-        <FontAwesomeIcon icon={faHeart} className="icon" />
-        <FontAwesomeIcon icon={faShoppingCart} className="icon" />
-      </div>
-    </nav>
+      {/* Overlay */}
+      {showSidebar && (
+        <div
+          className="fixed inset-0 bg-black opacity-50 z-30"
+          onClick={toggleSidebar}
+        ></div>
+      )}
+    </>
   );
 };
 
 export default Navbar;
+

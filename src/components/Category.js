@@ -2,7 +2,7 @@ import React from 'react';
 import '../styles/Category.css';
 import aj1highredwhite from "../assets/aj1highredwhite.jpg";
 import yeezyslideblack from "../assets/yeezyslideblack.jpg";
-import loafer from "../assets/Gucci-Horsebit-Loafers-Black.avif";
+import loafer from "../assets/sambawhite.jpg";
 import boot from "../assets/Timberland-6-Inch-Premium-Waterproof-Wheat-Product.avif";
 import { Link } from 'react-router-dom';
 

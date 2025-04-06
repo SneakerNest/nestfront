@@ -1,23 +1,23 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 import App from "./App";
-import Login from "./components/Login";
-import Signup from "./components/Signup"; // Import Signup
-import Navbar from "./components/Navbar";
+import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishlistContext"; // ✅ ✅
+
 import "./styles/Global.css";
+import "./index.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
-    <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} /> 
-      </Routes>
-    </Router>
+    <CartProvider>
+      <WishlistProvider> {/* ✅ This is crucial */}
+        <Router>
+          <App />
+        </Router>
+      </WishlistProvider>
+    </CartProvider>
   </React.StrictMode>
 );

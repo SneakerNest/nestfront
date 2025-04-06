@@ -1,0 +1,103 @@
+const products = [
+  {
+    id: 1,
+    name: "Birkenstock Arizona Black",
+    price: 129.99,
+    category: "SlippersSandals",
+    image: require("../assets/birkenstockarizonablack.jpg"),
+  },
+  {
+    id: 2,
+    name: "Crocs Blue",
+    price: 89.99,
+    category: "SlippersSandals",
+    image: require("../assets/crocsblue.jpg"),
+  },
+  {
+    id: 3,
+    name: "Yeezy Slide Black",
+    price: 119.99,
+    category: "SlippersSandals",
+    image: require("../assets/yeezyslideblack.jpg"),
+  },
+  
+  {
+    id: 5,
+    name: "Converse Red",
+    price: 89.99,
+    category: "Sneakers",
+    image: require("../assets/conversered.jpg"),
+  },
+  {
+    id: 6,
+    name: "Dunk Purple",
+    price: 129.99,
+    category: "Sneakers",
+    image: require("../assets/dunkpurple.jpg"),
+  },
+  {
+    id: 7,
+    name: "Samba Black",
+    price: 199.99,
+    category: "Sneakers",
+    image: require("../assets/sambablack.jpg"),
+  },
+  {
+    id: 8,
+    name: "Samba Navy",
+    price: 199.99,
+    category: "Sneakers",
+    image: require("../assets/sambanavy.jpg"),
+  },
+  {
+    id: 9,
+    name: "Samba Pink",
+    price: 199.99,
+    category: "Sneakers",
+    image: require("../assets/sambapink.jpg"),
+  },
+  {
+    id: 10,
+    name: "Samba White",
+    price: 199.99,
+    category: "Sneakers",
+    image: require("../assets/sambawhite.jpg"),
+  },
+  {
+    id: 11,
+    name: "Yeezy Black",
+    price: 259.99,
+    category: "Sneakers",
+    image: require("../assets/yeezyblack.jpg"),
+  },
+  {
+    id: 12,
+    name: "Yeezy Gray",
+    price: 399.99,
+    category: "Sneakers",
+    image: require("../assets/yeezygray.jpg"),
+  },
+  {
+    id: 13,
+    name: "Yeezy Green",
+    price: 259.99,
+    category: "Sneakers",
+    image: require("../assets/yeezygreen.jpg"),
+  },
+  {
+    id: 14,
+    name: "Yeezy White",
+    price: 259.99,
+    category: "Sneakers",
+    image: require("../assets/yeezywhite.jpg"),
+  },
+  {
+    id: 15,
+    name: "Timberland 6 Inch Premium Waterproof",
+    price: 219.99,
+    category: "Boots",
+    image: require("../assets/Timberland-6-Inch-Premium-Waterproof-Wheat-Product.avif"),
+  },
+];
+
+export default products;
