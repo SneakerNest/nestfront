@@ -13,6 +13,7 @@ import SlippersSandalsPage from "./components/SlippersSandals";
 import WishlistPage from "./components/WishlistPage";
 
 
+
 function App() {
   return (
     <>
@@ -35,6 +36,7 @@ function App() {
         <Route path="/casual" element={<CasualPage />} />
         <Route path="/boots" element={<BootsPage />} />
         <Route path="/slippers-sandals" element={<SlippersSandalsPage />} />
+
       </Routes>
     </>
   );
