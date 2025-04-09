@@ -1,13 +1,13 @@
 /* Ensure content starts below the Navbar */
 .container {
   padding-top: 90px;
-  width: 90%;
+  width: 100%;
+  max-width: 1200px;
   margin: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
-  max-width: 1200px;
 }
 
 /* Header Styling */
