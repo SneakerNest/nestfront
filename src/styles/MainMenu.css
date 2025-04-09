@@ -1,6 +1,299 @@
-.MainMenu {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+/* MainMenu.css */
+
+body {
+  background-color: #fff;
+  color: #111;
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.hero-slider {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+.hero-slide {
+  height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+.hero-img {
+  height: 100vh;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 0 !important;
+  margin-right: -1px; /* closes the tiny gap */
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-align: center;
+  z-index: 2;
+  background-color: rgba(0, 0, 0, 0.5); /* transparent black bg */
+  padding: 30px 40px;
+  border-radius: 10px;
+}
+
+.hero-overlay h1 {
+  font-size: 64px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.hero-overlay p {
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.hero-overlay button {
+  padding: 12px 30px;
+  background-color: #e60023;
+  border: none;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.hero-overlay button:hover {
+  background-color: #c3001d;
+}
+
+/* Slider Dots inside the image */
+.slick-dots {
+  position: absolute;
+  bottom: 40px;
+  width: 100%;
+  display: flex !important;
+  justify-content: center;
+  z-index: 3;
+}
+
+.slick-dots li button:before {
+  color: white !important;
+  opacity: 1;
+  font-size: 10px;
+}
+
+
+
+.categories {
+  padding: 60px;
+  background-color: #f9f9f9;
+  text-align: center;
+}
+
+.categories h2 {
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 40px;
+}
+
+.category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+}
+
+.category {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: transform 0.3s;
+  text-decoration: none;
+  color: inherit;
+  width: 240px;
+  padding: 10px;
+}
+
+.category:hover {
+  transform: translateY(-5px);
+}
+
+.category img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+}
+
+.category h3 {
+  padding: 15px 0 5px;
+  font-weight: 600;
+}
+
+/* NEW FEATURED SECTION */
+.featured {
+  background-color: #fff;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.featured h2 {
+  font-size: 30px;
+  margin-bottom: 40px;
+  font-weight: 800;
+}
+
+.featured-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  max-width: 1000px;
+  margin: auto;
+}
+
+.feature-box {
+  flex: 1 1 250px;
+  background-color: #f4f4f6;
+  border-radius: 12px;
+  padding: 30px 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s;
+}
+
+.feature-box:hover {
+  transform: translateY(-5px);
+}
+
+.feature-box h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.feature-box p {
+  font-size: 16px;
+  color: #444;
+}
+
+/* FOOTER */
+.new-footer {
+  background-color: #f4f4f6;
+  padding: 60px 20px;
+  color: #333;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  justify-content: space-between;
+}
+
+.footer-column {
+  flex: 1;
+  min-width: 220px;
+}
+
+.footer-logo {
+  color: #e60023;
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.footer-column h4 {
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-column ul li {
+  margin-bottom: 10px;
+}
+
+.footer-column ul li a {
+  text-decoration: none;
+  color: #333;
+  transition: color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-column ul li a:hover {
+  color: #e60023;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.newsletter-form input[type="email"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  flex: 1;
+  font-size: 14px;
+}
+
+.newsletter-form button {
+  background-color: #e60023;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.newsletter-form button:hover {
+  background-color: #c3001d;
+}
+
+.copyright {
+  font-size: 13px;
+  color: #888;
+  margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+  .hero-overlay h1 {
+    font-size: 40px;
   }
-  
+
+  .hero-overlay p {
+    font-size: 18px;
+  }
+
+  .hero-overlay button {
+    padding: 10px 24px;
+    font-size: 14px;
+  }
+
+  .footer-container {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .featured-boxes {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .category-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+}

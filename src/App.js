@@ -5,13 +5,15 @@ import Signup from "./components/Signup";
 import ProductPage from "./components/ProductPage";
 import MainMenu from "./components/MainMenu";
 
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
 // You can create these category pages as separate components
 import SneakersPage from "./components/Sneakers";
 import CasualPage from "./components/Casual";
 import BootsPage from "./components/Boots";
 import SlippersSandalsPage from "./components/SlippersSandals";
 import WishlistPage from "./components/WishlistPage";
-
 
 function App() {
   return (
@@ -41,3 +43,4 @@ function App() {
 }
 
 export default App;
+
