@@ -12,6 +12,10 @@ import BootsPage from "./components/Boots";
 import SlippersSandalsPage from "./components/SlippersSandals";
 import WishlistPage from "./components/WishlistPage";
 
+// Import the Product Manager component
+import ManagerHome from "./components/ManagerHome";
+import ProductManager from "./components/ProductManager";
+
 
 
 function App() {
@@ -36,6 +40,12 @@ function App() {
         <Route path="/casual" element={<CasualPage />} />
         <Route path="/boots" element={<BootsPage />} />
         <Route path="/slippers-sandals" element={<SlippersSandalsPage />} />
+
+        {/* Example manager route for the home dashboard */}
+        <Route path="/manager" element={<ManagerHome />} />
+
+        {/* Product Manager route */}
+        <Route path="/manager/products" element={<ProductManager />} />
 
       </Routes>
     </>
