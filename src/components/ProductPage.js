@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import "../styles/ProductPage.css";
 import products from "../data/products";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -17,25 +17,26 @@ function ProductPage() {
 
   const { toggleWishlistItem, isInWishlist } = useContext(WishlistContext);
 
-  // Sync with URL search param
   useEffect(() => {
     setSearchQuery(externalSearch);
   }, [externalSearch]);
 
   const categories = ["all", ...new Set(products.map((p) => p.category))];
 
-  // Step 1: Filter by category
-  let filteredProducts = selectedCategory === "all"
-    ? products
-    : products.filter((p) => p.category.toLowerCase() === selectedCategory.toLowerCase());
+  let filteredProducts =
+    selectedCategory === "all"
+      ? products
+      : products.filter(
+          (p) =>
+            p.category.toLowerCase() === selectedCategory.toLowerCase()
+        );
 
-  // Step 2: Filter by search query
-  filteredProducts = filteredProducts.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchQuery.toLowerCase())
+  filteredProducts = filteredProducts.filter(
+    (p) =>
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Step 3: Sort by price
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortOrder === "low-to-high") return a.price - b.price;
     if (sortOrder === "high-to-low") return b.price - a.price;
@@ -45,7 +46,10 @@ function ProductPage() {
   return (
     <div className="product-container">
       {/* Filter Bar */}
-      <div className="filter-bar" style={{ justifyContent: "space-between", gap: "10px", flexWrap: "wrap" }}>
+      <div
+        className="filter-bar"
+        style={{ justifyContent: "space-between", gap: "10px", flexWrap: "wrap" }}
+      >
         {/* Category Filter */}
         <select
           onChange={(e) => setSelectedCategory(e.target.value)}
@@ -78,7 +82,7 @@ function ProductPage() {
             borderRadius: "5px",
             border: "1px solid #ddd",
             flex: "1",
-            minWidth: "150px"
+            minWidth: "150px",
           }}
         />
       </div>
@@ -87,32 +91,39 @@ function ProductPage() {
       <div className="product-grid">
         {sortedProducts.length > 0 ? (
           sortedProducts.map((product) => (
-            <div key={product.id} className="product-card">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="product-img"
-              />
-              <h3 className="product-title">{product.name}</h3>
-              <p className="product-price">${product.price.toFixed(2)}</p>
-              <div className="product-actions">
-                <button className="cart-btn">
-                  <FontAwesomeIcon icon={faShoppingCart} />
-                </button>
-                <FontAwesomeIcon
-                  icon={faHeart}
-                  className="wishlist-icon"
-                  onClick={() => toggleWishlistItem(product)}
-                  style={{
-                    color: isInWishlist(product.id) ? "red" : "black",
-                    cursor: "pointer",
-                  }}
+            <Link to={`/product/${product.id}`} key={product.id} className="product-card-link">
+              <div className="product-card">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="product-img"
                 />
+                <h3 className="product-title">{product.name}</h3>
+                <p className="product-price">${product.price.toFixed(2)}</p>
+                <div className="product-actions">
+                  <button className="cart-btn">
+                    <FontAwesomeIcon icon={faShoppingCart} />
+                  </button>
+                  <FontAwesomeIcon
+                    icon={faHeart}
+                    className="wishlist-icon"
+                    onClick={(e) => {
+                      e.preventDefault(); // Prevent navigation on icon click
+                      toggleWishlistItem(product);
+                    }}
+                    style={{
+                      color: isInWishlist(product.id) ? "red" : "black",
+                      cursor: "pointer",
+                    }}
+                  />
+                </div>
               </div>
-            </div>
+            </Link>
           ))
         ) : (
-          <p style={{ marginTop: "20px", fontWeight: "bold" }}>No products found.</p>
+          <p style={{ marginTop: "20px", fontWeight: "bold" }}>
+            No products found.
+          </p>
         )}
       </div>
     </div>

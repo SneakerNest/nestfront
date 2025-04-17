@@ -15,15 +15,17 @@ import BootsPage from "./components/Boots";
 import SlippersSandalsPage from "./components/SlippersSandals";
 import WishlistPage from "./components/WishlistPage";
 
-<<<<<<< HEAD
+
 // Import the Product Manager component
 import ManagerHome from "./components/ManagerHome";
 import ProductManager from "./components/ProductManager";
+import ProductView from "./components/ProductView";
+
+// Inside your <Routes>
 
 
 
-=======
->>>>>>> 63e0f4533dfb48bea38569d84edc7cf04fd3bf53
+
 function App() {
   return (
     <>
@@ -32,6 +34,7 @@ function App() {
         <Route path="/wishlist" element={<WishlistPage />} />
         {/* Redirect root to login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/product/:id" element={<ProductView />} />
 
         {/* Auth pages */}
         <Route path="/login" element={<Login />} />
