@@ -1,0 +1,28 @@
+.order-confirmation {
+    background: #f0fff4;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    font-family: 'Segoe UI', sans-serif;
+    color: #2d572c;
+  }
+  
+  .order-confirmation h3 {
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .order-confirmation ul {
+    padding-left: 1.2rem;
+    margin: 1rem 0;
+  }
+  
+  .order-confirmation li {
+    padding: 0.3rem 0;
+  }
+  
+  .order-confirmation p {
+    margin: 0.8rem 0;
+    font-size: 1rem;
+  }
+  

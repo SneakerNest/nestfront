@@ -1,0 +1,21 @@
+.cart-page {
+    display: flex;
+    height: 100vh;
+    gap: 1rem;
+    padding: 110px 40px 60px;
+  }
+  
+  .cart-left {
+    flex: 2;
+    overflow-y: auto;
+  }
+  
+  .cart-right {
+    flex: 1;
+    border-left: 1px solid #ccc;
+    padding-left: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  

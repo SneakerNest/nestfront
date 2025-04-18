@@ -14,7 +14,7 @@ import CasualPage from "./components/Casual";
 import BootsPage from "./components/Boots";
 import SlippersSandalsPage from "./components/SlippersSandals";
 import WishlistPage from "./components/WishlistPage";
-
+import CartPage from "./components/CartPage"
 
 // Import the Product Manager component
 import ManagerHome from "./components/ManagerHome";
@@ -22,7 +22,7 @@ import ProductManager from "./components/ProductManager";
 import ProductView from "./components/ProductView";
 
 // Inside your <Routes>
-
+import SalesManagerMenu from "./components/SalesManagerMenu";
 
 
 
@@ -32,6 +32,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/wishlist" element={<WishlistPage />} />
+        <Route path="/cart" element={<CartPage />} />
         {/* Redirect root to login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/product/:id" element={<ProductView />} />
@@ -55,6 +56,7 @@ function App() {
 
         {/* Product Manager route */}
         <Route path="/manager/products" element={<ProductManager />} />
+        <Route path="/salesmanager" element={<SalesManagerMenu />} />
 
       </Routes>
     </>

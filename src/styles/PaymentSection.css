@@ -1,0 +1,46 @@
+.payment-section {
+  background: #f9f9f9;
+  padding: 1.8rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.payment-section h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.5rem;
+}
+
+.payment-section input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.payment-section button {
+  padding: 12px 16px;
+  background-color: red;
+  border: none;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  width: 100%;
+}
+
+.payment-section button:hover {
+  background-color: #e63034;
+  transform: translateY(-1px);
+}

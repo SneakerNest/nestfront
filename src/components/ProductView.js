@@ -6,6 +6,7 @@ import "slick-carousel/slick/slick-theme.css";
 import products from "../data/products";
 import "../styles/ProductView.css";
 import { WishlistContext } from "../context/WishlistContext";
+import { CartContext } from "../context/CartContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart, faStar, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
@@ -42,6 +43,7 @@ const ProductView = () => {
   const { toggleWishlistItem, isInWishlist } = useContext(WishlistContext);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState("default");
+  const { addToCart, isInCart } = useContext(CartContext);
 
   const sizes = [38, 39, 40, 41, 42, 43, 44];
   const colors = ["default", "red", "gray", "white"];
@@ -58,6 +60,16 @@ const ProductView = () => {
     responsive: [
       { breakpoint: 768, settings: { slidesToShow: 1 } }
     ]
+  };
+
+  const handleAddToCart = (product) => {
+    if (!selectedSize) {
+      alert("Please select a size.");
+      return;
+    }
+  
+    const productWithSize = { ...product, size: selectedSize };
+    addToCart(productWithSize);
   };
 
   return (
@@ -98,7 +110,7 @@ const ProductView = () => {
             </div>
           </div>
           <div className="actions">
-            <button className="cart-button">Add to Cart</button>
+            <button className="cart-button" onClick={() => handleAddToCart(product)}>Add to Cart </button>
             <button className="wishlist-button" onClick={() => toggleWishlistItem(product)}>
               Favorite <FontAwesomeIcon icon={faHeart} color={isInWishlist(product.id) ? "red" : "black"} />
             </button>

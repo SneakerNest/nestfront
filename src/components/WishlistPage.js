@@ -1,11 +1,13 @@
 import React, { useContext, useState } from "react";
 import { WishlistContext } from "../context/WishlistContext";
+import { CartContext } from "../context/CartContext";
 import "../styles/WishlistPage.css";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const WishlistPage = () => {
   const { wishlist, toggleWishlistItem } = useContext(WishlistContext);
+  const { addToCart } = useContext(CartContext);
   const [selectedSizes, setSelectedSizes] = useState({});
   const step = 1; // Always show first step (Favorite) on wishlist page only
 
@@ -14,7 +16,12 @@ const WishlistPage = () => {
   };
 
   const handleProceed = (productId) => {
-    console.log("Proceed with product:", productId, "Size:", selectedSizes[productId]);
+    const product = wishlist.find((item) => item.id === productId);
+    const size = selectedSizes[productId];
+
+    if (product && size) {
+      addToCart({ ...product, size });
+    }
   };
 
   const progressionLabels = ["Favorite", "Confirm Order", "Payment", "Delivered"];

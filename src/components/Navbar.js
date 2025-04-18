@@ -49,7 +49,7 @@ const Navbar = () => {
         {/* Right Icons */}
         <div className="flex items-center space-x-6">
           <Heart className="cursor-pointer hover:text-red-600 transition-colors" onClick={() => navigate('/wishlist')}/>
-          <ShoppingCart className="cursor-pointer hover:text-red-600 transition-colors" />
+          <ShoppingCart className="cursor-pointer hover:text-red-600 transition-colors" onClick={() => navigate('/cart')}/>
           <User className="cursor-pointer hover:text-red-600 transition-colors" onClick={() => navigate('/login')} />
           <Menu className="cursor-pointer hover:text-red-600 transition-colors" onClick={toggleSidebar} />
         </div>

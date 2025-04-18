@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { useLocation, Link } from "react-router-dom";
 import "../styles/ProductPage.css";
 import products from "../data/products";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShoppingCart, faHeart } from "@fortawesome/free-solid-svg-icons";
 import { WishlistContext } from "../context/WishlistContext";
+import { CartContext } from '../context/CartContext';
 
 function ProductPage() {
   const location = useLocation();
@@ -14,14 +15,30 @@ function ProductPage() {
   const [sortOrder, setSortOrder] = useState("default");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeSizePopup, setActiveSizePopup] = useState(null);
+  const [selectedSizes, setSelectedSizes] = useState({});
 
   const { toggleWishlistItem, isInWishlist } = useContext(WishlistContext);
+  const { addToCart, isInCart } = useContext(CartContext);
 
   useEffect(() => {
     setSearchQuery(externalSearch);
   }, [externalSearch]);
 
   const categories = ["all", ...new Set(products.map((p) => p.category))];
+
+  const popupRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (popupRef.current && !popupRef.current.contains(event.target)) {
+        setActiveSizePopup(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   let filteredProducts =
     selectedCategory === "all"
@@ -42,6 +59,18 @@ function ProductPage() {
     if (sortOrder === "high-to-low") return b.price - a.price;
     return 0;
   });
+
+  const handleSizeChange = (productId, size) => {
+    setSelectedSizes(prev => ({ ...prev, [productId]: size }));
+  };
+  
+  const handleAddToCart = (product) => {
+    const selectedSize = selectedSizes[product.id];
+    if (selectedSize) {
+      addToCart({ ...product, size: selectedSize });
+      setActiveSizePopup(null);
+    }
+  };
 
   return (
     <div className="product-container">
@@ -101,9 +130,48 @@ function ProductPage() {
                 <h3 className="product-title">{product.name}</h3>
                 <p className="product-price">${product.price.toFixed(2)}</p>
                 <div className="product-actions">
-                  <button className="cart-btn">
-                    <FontAwesomeIcon icon={faShoppingCart} />
-                  </button>
+                  <div className="cart-btn" style={{ position: "relative" }}>
+                    <FontAwesomeIcon
+                      icon={faShoppingCart}
+                      onClick={(e) => {
+                        e.preventDefault(); // 🛑 Prevent <Link> navigation
+                        e.stopPropagation(); // 🧼 Prevent bubbling
+                        setActiveSizePopup(product.id);
+                      }}
+                      style={{
+                        color: isInCart(product.id) ? "red" : "black",
+                        cursor: "pointer",
+                      }}
+                    />
+
+                    {activeSizePopup === product.id && (
+                      <div className="size-popup" ref={popupRef}>
+                        <select
+                          value={selectedSizes[product.id] || ""}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation(); // 🛑 prevent parent Link navigation
+                          }}
+                          onChange={(e) => 
+                            handleSizeChange(product.id, e.target.value)}
+                        >
+                          <option value="">Size</option>
+                          {["36", "37", "38", "39", "40", "41", "42", "43", "44"].map(size => (
+                            <option key={size} value={size}>{size}</option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleAddToCart(product)}}
+                          disabled={!selectedSizes[product.id]}
+                        >
+                          Add
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <FontAwesomeIcon
                     icon={faHeart}
                     className="wishlist-icon"
