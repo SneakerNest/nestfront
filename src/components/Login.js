@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Login.css";
+import { Link } from "react-router-dom";
+
 
 function Login() {
   const navigate = useNavigate();
@@ -23,7 +25,9 @@ function Login() {
     <div className="login-container">
       <div className="login-box">
         <div className="logo-container">
-          <img src={require("../assets/2.png")} alt="SneakerNest Logo" />
+        <Link to="/">
+    <img src={require("../assets/2.png")} alt="SneakerNest Logo" />
+        </Link>
         </div>
 
         <form onSubmit={handleLogin}>
