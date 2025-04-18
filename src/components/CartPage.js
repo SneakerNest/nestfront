@@ -9,13 +9,13 @@ import { CartContext } from '../context/CartContext';
 
 const CartPage = () => {
     const [cartStep, setCartStep] = useState('summary');
-    const { cartItems, clearCart } = useContext(CartContext);
+    const { cartItems } = useContext(CartContext);
     const [confirmationData, setConfirmationData] = useState([]);
 
 const handlePaymentSubmit = () => {
     setConfirmationData(cartItems);  
     setCartStep('confirmation');  
-    clearCart();
+    
 };
 
   return (

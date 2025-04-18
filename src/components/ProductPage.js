@@ -57,6 +57,8 @@ function ProductPage() {
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortOrder === "low-to-high") return a.price - b.price;
     if (sortOrder === "high-to-low") return b.price - a.price;
+    if (sortOrder === "rating-high-to-low") return b.rating - a.rating;
+    if (sortOrder === "rating-low-to-high") return a.rating - b.rating;
     return 0;
   });
 
@@ -96,6 +98,8 @@ function ProductPage() {
           <option value="default">Sort By</option>
           <option value="low-to-high">Price: Low to High</option>
           <option value="high-to-low">Price: High to Low</option>
+          <option value="rating-high-to-low">Rating: High to Low</option>
+          <option value="rating-low-to-high">Rating: Low to High</option>
         </select>
 
         {/* Search Input */}

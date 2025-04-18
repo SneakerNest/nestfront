@@ -28,7 +28,7 @@ const OrderSummary = ({ onNext }) => {
       <p>
         <strong>SUBTOTAL:</strong> <span>${subtotal.toFixed(2)}</span>
       </p>
-      <button onClick={onNext}>Proceed to Delivery</button>
+      <button onClick={onNext}>Proceed to Payment</button>
     </div>
   );
 };
