@@ -5,11 +5,11 @@ const ProductManager = () => {
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({
     name: "",
-    price: "",
     stock: "",
-    category: "",
+    category: "Sneakers", // Default category is Sneakers
     image: "",
     sizes: "",
+    status: "Ordered", // Default status is Ordered
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [totalProducts, setTotalProducts] = useState(0);
@@ -25,7 +25,14 @@ const ProductManager = () => {
         stock: 10, 
         category: "Sneakers", 
         image: "https://via.placeholder.com/220x250?text=Sneaker+A",
-        sizes: ["42", "43", "43", "45"]
+        sizes: ["42", "43", "43", "45"],
+        units: [
+          { id: 1, status: "Ordered", size: "42" },
+          { id: 2, status: "Ordered", size: "43" },
+          { id: 3, status: "Ordered", size: "43" },
+          { id: 4, status: "Ordered", size: "45" },
+          { id: 5, status: "Ordered", size: "42" },
+        ],
       },
       { 
         id: 2, 
@@ -34,7 +41,14 @@ const ProductManager = () => {
         stock: 15, 
         category: "Casual", 
         image: "https://via.placeholder.com/220x250?text=Casual+B",
-        sizes: ["42", "43", "43", "45"]
+        sizes: ["42", "43", "43", "45"],
+        units: [
+          { id: 1, status: "Ordered", size: "42" },
+          { id: 2, status: "Ordered", size: "43" },
+          { id: 3, status: "Ordered", size: "43" },
+          { id: 4, status: "Ordered", size: "45" },
+          { id: 5, status: "Ordered", size: "42" },
+        ],
       },
       {
         id: 3,
@@ -43,12 +57,18 @@ const ProductManager = () => {
         stock: 5,
         category: "Boots",
         image: "https://via.placeholder.com/220x250?text=Boot+C",
-        sizes: ["42", "43", "43", "45"]
+        sizes: ["42", "43", "43", "45"],
+        units: [
+          { id: 1, status: "Ordered", size: "42" },
+          { id: 2, status: "Ordered", size: "43" },
+          { id: 3, status: "Ordered", size: "43" },
+          { id: 4, status: "Ordered", size: "45" },
+          { id: 5, status: "Ordered", size: "42" },
+        ],
       }
     ];
 
     setProducts(initialProducts);
-    // Calculate total products and stock
     updateTotals(initialProducts);
   }, []);
 
@@ -58,7 +78,7 @@ const ProductManager = () => {
   }, [products]);
 
   const updateTotals = (products) => {
-    const totalStock = products.reduce((sum, product) => sum + product.stock, 0);
+    const totalStock = products.reduce((sum, product) => sum + product.units.length, 0);
     const totalProducts = products.length;
     setTotalStock(totalStock);
     setTotalProducts(totalProducts);
@@ -72,23 +92,47 @@ const ProductManager = () => {
   // Add new product
   const handleAddProduct = (e) => {
     e.preventDefault();
-    const { name, price, stock, category, image, sizes } = newProduct;
-    if (!name || !price || !stock || !category || !image || !sizes) {
+    const { name, stock, category, image, sizes, status } = newProduct;
+    if (!name || !stock || !category || !image || !sizes) {
       alert("Please fill in all fields.");
       return;
     }
+
+    // Create units based on stock
+    const units = [];
+    const stockNumber = Number(stock);
+    for (let i = 0; i < stockNumber; i++) {
+      units.push({ id: i + 1, status: status, size: sizes.split(",")[i % sizes.split(",").length].trim() });
+    }
+
     const newId = products.length ? products[products.length - 1].id + 1 : 1;
     const productToAdd = {
       id: newId,
       name,
-      price: Number(price),
-      stock: Number(stock),
+      stock: stockNumber,
       category,
       image,
       sizes: sizes.split(",").map(s => s.trim()),
+      units, // Store the units
     };
     setProducts([...products, productToAdd]);
-    setNewProduct({ name: "", price: "", stock: "", category: "", image: "", sizes: "" });
+    setNewProduct({ name: "", stock: "", category: "Sneakers", image: "", sizes: "", status: "Ordered" });
+  };
+
+  // Handle changing status (e.g., Bought -> Shipped)
+  const handleStatusChange = (productId, unitId, newStatus) => {
+    setProducts(prev =>
+      prev.map(p =>
+        p.id === productId
+          ? {
+              ...p,
+              units: p.units.map(u =>
+                u.id === unitId ? { ...u, status: newStatus } : u
+              ),
+            }
+          : p
+      )
+    );
   };
 
   // Delete a product
@@ -96,17 +140,6 @@ const ProductManager = () => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       setProducts(products.filter(p => p.id !== id));
     }
-  };
-
-  // Inline update for product fields
-  const handleUpdate = (id, field, value) => {
-    setProducts(prev =>
-      prev.map(p =>
-        p.id === id
-          ? { ...p, [field]: field === "price" || field === "stock" ? Number(value) : value }
-          : p
-      )
-    );
   };
 
   // Filter products based on search query (by name)
@@ -141,13 +174,6 @@ const ProductManager = () => {
           name="name"
           placeholder="Product Name"
           value={newProduct.name}
-          onChange={handleInputChange}
-        />
-        <input
-          type="number"
-          name="price"
-          placeholder="Price"
-          value={newProduct.price}
           onChange={handleInputChange}
         />
         <input
@@ -188,10 +214,10 @@ const ProductManager = () => {
             <tr>
               <th>Image</th>
               <th>Product</th>
-              <th>Price ($)</th>
               <th>Stock</th>
               <th>Category</th>
               <th>Sizes</th>
+              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -201,35 +227,26 @@ const ProductManager = () => {
                 <td>
                   <img className="product-img" src={p.image} alt={p.name} />
                 </td>
-                <td>
-                  <input
-                    type="text"
-                    value={p.name}
-                    onChange={(e) => handleUpdate(p.id, "name", e.target.value)}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    value={p.price}
-                    onChange={(e) => handleUpdate(p.id, "price", e.target.value)}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    value={p.stock}
-                    onChange={(e) => handleUpdate(p.id, "stock", e.target.value)}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    value={p.category}
-                    onChange={(e) => handleUpdate(p.id, "category", e.target.value)}
-                  />
-                </td>
+                <td>{p.name}</td>
+                <td>{p.units.length}</td>
+                <td>{p.category}</td>
                 <td>{p.sizes.join(", ")}</td>
+                <td>
+                  {p.units.map(unit => (
+                    <div key={unit.id}>
+                      <span>{unit.size}: {unit.status}</span>
+                      <select 
+                        value={unit.status} 
+                        onChange={(e) => handleStatusChange(p.id, unit.id, e.target.value)}
+                      >
+                        <option value="Ordered">Ordered</option>
+                        <option value="Bought">Bought</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Arrived">Arrived</option>
+                      </select>
+                    </div>
+                  ))}
+                </td>
                 <td>
                   <button onClick={() => handleDelete(p.id)} className="delete-btn">
                     Delete
@@ -237,13 +254,6 @@ const ProductManager = () => {
                 </td>
               </tr>
             ))}
-            {filteredProducts.length === 0 && (
-              <tr>
-                <td colSpan="7" className="no-results">
-                  No products found.
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>
