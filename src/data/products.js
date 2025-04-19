@@ -6,6 +6,7 @@ const products = [
     category: "SlippersSandals",
     image: require("../assets/birkenstockarizonablack.jpg"),
     rating: 4.3,
+    stock: 12,
   },
   {
     id: 2,
@@ -14,14 +15,16 @@ const products = [
     category: "SlippersSandals",
     image: require("../assets/crocsblue.jpg"),
     rating: 4.6,
+    stock: 18,
   },
   {
     id: 3,
     name: "Yeezy Slide Black",
     price: 119.99,
-    category: "SlippersSandals",
+    category: "slippers & sandals",
     image: require("../assets/yeezyslideblack.jpg"),
     rating: 4.8,
+    stock: 10,
   },
   {
     id: 5,
@@ -30,6 +33,7 @@ const products = [
     category: "Sneakers",
     image: require("../assets/conversered.jpg"),
     rating: 4.1,
+    stock: 15,
   },
   {
     id: 6,
@@ -38,6 +42,7 @@ const products = [
     category: "Sneakers",
     image: require("../assets/dunkpurple.jpg"),
     rating: 4.7,
+    stock: 9,
   },
   {
     id: 7,
@@ -46,6 +51,7 @@ const products = [
     category: "Sneakers",
     image: require("../assets/sambablack.jpg"),
     rating: 4.9,
+    stock: 7,
   },
   {
     id: 8,
@@ -54,6 +60,7 @@ const products = [
     category: "Sneakers",
     image: require("../assets/sambanavy.jpg"),
     rating: 4.5,
+    stock: 11,
   },
   {
     id: 9,
@@ -62,6 +69,7 @@ const products = [
     category: "Sneakers",
     image: require("../assets/sambapink.jpg"),
     rating: 4.4,
+    stock: 14,
   },
   {
     id: 10,
@@ -70,6 +78,7 @@ const products = [
     category: "Sneakers",
     image: require("../assets/sambawhite.jpg"),
     rating: 4.6,
+    stock: 5,
   },
   {
     id: 11,
@@ -78,6 +87,7 @@ const products = [
     category: "Sneakers",
     image: require("../assets/yeezyblack.jpg"),
     rating: 4.8,
+    stock: 6,
   },
   {
     id: 12,
@@ -86,6 +96,7 @@ const products = [
     category: "Sneakers",
     image: require("../assets/yeezygray.jpg"),
     rating: 4.7,
+    stock: 8,
   },
   {
     id: 13,
@@ -94,6 +105,7 @@ const products = [
     category: "Sneakers",
     image: require("../assets/yeezygreen.jpg"),
     rating: 4.4,
+    stock: 4,
   },
   {
     id: 14,
@@ -102,6 +114,7 @@ const products = [
     category: "Sneakers",
     image: require("../assets/yeezywhite.jpg"),
     rating: 4.3,
+    stock: 13,
   },
   {
     id: 15,
@@ -110,6 +123,7 @@ const products = [
     category: "Boots",
     image: require("../assets/Timberland-6-Inch-Premium-Waterproof-Wheat-Product.avif"),
     rating: 4.9,
+    stock: 16,
   },
 ];
 
