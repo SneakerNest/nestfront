@@ -84,14 +84,27 @@ const ProfilePage = () => {
 
   const handleReviewSubmit = () => {
     if (selectedOrder && selectedProductId && (comment.trim() || rating)) {
-      const newReview = {
-        orderId: selectedOrder.id,
-        productId: selectedProductId,
-        rating,
-        comment,
-        status: comment.trim() ? "pending" : "approved", // 🧠 Logic here
-      };
-      setReviews([...reviews, newReview]);
+      const newReviews = [];
+  
+      if (rating) {
+        newReviews.push({
+          orderId: selectedOrder.id,
+          productId: selectedProductId,
+          rating,
+          status: "approved" // rating is instantly saved
+        });
+      }
+  
+      if (comment.trim()) {
+        newReviews.push({
+          orderId: selectedOrder.id,
+          productId: selectedProductId,
+          comment,
+          status: "pending" // comment needs approval
+        });
+      }
+  
+      setReviews((prev) => [...prev, ...newReviews]);
       setComment("");
       setSelectedOrder(null);
       setSelectedProductId(null);
