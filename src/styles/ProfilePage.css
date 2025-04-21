@@ -1,0 +1,228 @@
+.profile-container {
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+    background-color: #f7f7f7;
+    min-height: 100vh;
+  }
+  
+  .profile-box {
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 10px;
+    max-width: 800px;
+    width: 100%;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .profile-box h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+  }
+  
+  .profile-section {
+    margin-bottom: 30px;
+  }
+  
+  .profile-section h3 {
+    margin: 10px 0 5px;
+    font-size: 20px;
+    color: #444;
+  }
+  
+  .profile-section p {
+    font-size: 16px;
+    color: #666;
+    margin: 2px 0;
+  }
+  
+  .logout-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: block;
+    margin: 20px auto 0;
+  }
+  
+  .logout-btn:hover {
+    background-color: #d94c4c;
+  }
+  
+  /* Order List */
+  .order-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .order-item {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    background: #fdfdfd;
+  }
+  
+  /* Tracker Bar */
+  .order-tracker {
+    margin-top: 10px;
+  }
+  
+  .tracker-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    padding: 10px 0;
+  }
+  
+  .tracker-step {
+    text-align: center;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .tracker-step .circle {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ccc;
+    margin: 0 auto 5px;
+    transition: background 0.3s;
+  }
+  
+  .tracker-step.active .circle {
+    background-color: red;
+  }
+  
+  .tracker-step span {
+    font-size: 12px;
+    color: #888;
+    text-transform: capitalize;
+  }
+  
+  .tracker-step.active span {
+    color: red;
+    font-weight: 600;
+  }
+  
+  .tracker-line::before {
+    content: "";
+    position: absolute;
+    top: 18px;
+    left: 8px;
+    right: 8px;
+    height: 2px;
+    background: #ccc;
+    z-index: 0;
+  }
+  
+  .tracker-line-fill {
+    position: absolute;
+    top: 18px;
+    left: 8px;
+    height: 2px;
+    background: red;
+    z-index: 1;
+    transition: width 0.4s ease;
+  }
+  
+  /* Review Button */
+  .review-btn {
+    margin-top: 10px;
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .review-btn:hover {
+    background-color: darkgray;
+  }
+  
+  /* Review Popup */
+  .review-popup {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin-top: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  .review-popup h4 {
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .review-popup select,
+  .review-popup textarea {
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: none;
+  }
+  
+  .review-popup button {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background-color: black;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .review-popup button:hover {
+    background-color: darkgray;
+  }
+  .order-review {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-left: 4px solid #ddd;
+    border-radius: 6px;
+  }
+  
+  .review-rating {
+    color: #ffc107;
+    font-size: 16px;
+  }
+  
+  .review-comment {
+    font-style: italic;
+    color: #444;
+    margin: 6px 0;
+  }
+  
+  .review-status {
+    font-weight: bold;
+    font-size: 14px;
+    display: inline-block;
+    margin-top: 4px;
+  }
+  
+  .review-status.pending {
+    color: #ff9900;
+  }
+  
+  .review-status.approved {
+    color: green;
+  }
+  
+  .review-status.rejected {
+    color: red;
+  }

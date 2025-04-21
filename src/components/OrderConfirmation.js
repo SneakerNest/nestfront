@@ -18,6 +18,7 @@ const OrderConfirmation = ({ items }) => {
       </ul>
 
       <p><strong>Total:</strong> ${subtotal.toFixed(2)}</p>
+      <p>A PDF copy of your invoice will be mailed to you.</p>
     </div>
   );
 };

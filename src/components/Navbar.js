@@ -9,6 +9,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { isUserLogged } from "../utils/auth";
 
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState(false);
@@ -18,6 +19,13 @@ const Navbar = () => {
 
   const toggleSidebar = () => setShowSidebar(!showSidebar);
   const toggleCategories = () => setShowCategories(!showCategories);
+  const handleUserClick = () => {
+    if (isUserLogged()) {
+      navigate("/profile");
+    } else {
+      navigate("/login");
+    }
+  };
 
   return (
     <>
@@ -50,7 +58,7 @@ const Navbar = () => {
         <div className="flex items-center space-x-6">
           <Heart className="cursor-pointer hover:text-red-600 transition-colors" onClick={() => navigate('/wishlist')}/>
           <ShoppingCart className="cursor-pointer hover:text-red-600 transition-colors" onClick={() => navigate('/cart')}/>
-          <User className="cursor-pointer hover:text-red-600 transition-colors" onClick={() => navigate('/login')} />
+          <User className="cursor-pointer hover:text-red-600 transition-colors" onClick={handleUserClick} />
           <Menu className="cursor-pointer hover:text-red-600 transition-colors" onClick={toggleSidebar} />
         </div>
       </nav>

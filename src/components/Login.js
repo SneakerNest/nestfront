@@ -1,22 +1,36 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { setLoggedIn } from "../utils/auth";
 import "../styles/Login.css";
+
+const userDB = {
+  "mert": "mert@salesmanager.com",
+  "ramzy": "ramzy@productmanager.com",
+  "tdoker": "tdoker@gmail.com",
+};
 
 function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = (e) => {
     e.preventDefault();
 
+    const email = userDB[username] || "";
+
+    setLoggedIn();
+
     if (email.endsWith("@salesmanager.com")) {
       navigate("/salesmanager");
     } else if (email.endsWith("@productmanager.com")) {
       navigate("/manager");
-    } else {
+    } else if (email){
       navigate("/main-menu");
+    } else {
+      alert("User not found")
     }
+    
   };
 
   return (
@@ -28,10 +42,10 @@ function Login() {
 
         <form onSubmit={handleLogin}>
           <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             required
           />
           <input

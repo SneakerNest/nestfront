@@ -6,11 +6,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShoppingCart, faHeart } from "@fortawesome/free-solid-svg-icons";
 import { WishlistContext } from "../context/WishlistContext";
 import { CartContext } from '../context/CartContext';
+import { isUserLogged } from "../utils/auth";
+import { useNavigate } from "react-router-dom";
 
 function ProductPage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const externalSearch = params.get("search")?.toLowerCase() || "";
+  const navigate = useNavigate();
 
   const [sortOrder, setSortOrder] = useState("default");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -181,7 +184,12 @@ function ProductPage() {
                     className="wishlist-icon"
                     onClick={(e) => {
                       e.preventDefault(); // Prevent navigation on icon click
-                      toggleWishlistItem(product);
+                      if (isUserLogged()) {
+                        toggleWishlistItem(product);
+                      } else {
+                        alert("Please log in to add items to your wishlist.");
+                        navigate("/login");
+                      }
                     }}
                     style={{
                       color: isInWishlist(product.id) ? "red" : "black",

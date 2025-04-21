@@ -6,6 +6,8 @@ import PaymentSection from './PaymentSection';
 import OrderSummary from './OrderSummary';
 import OrderConfirmation from './OrderConfirmation';
 import { CartContext } from '../context/CartContext';
+import { isUserLogged } from "../utils/auth";
+import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
     const [cartStep, setCartStep] = useState('summary');
@@ -18,21 +20,30 @@ const handlePaymentSubmit = () => {
     
 };
 
+const navigate = useNavigate();
+
   return (
     <div className="cart-page">
       <div className="cart-left">
         <CartList />
       </div>
       <div className="cart-right">
-        {cartStep === 'summary' && (
-            <OrderSummary onNext={() => setCartStep('payment')} />
-        )}
-        {cartStep === 'payment' && (
-            <PaymentSection onSubmit={handlePaymentSubmit}/>
-        )}
-        {cartStep === 'confirmation' && (<OrderConfirmation items={confirmationData}/>)}
-      </div>
+      {cartStep === 'summary' && (
+        <OrderSummary onNext={() => {
+          if (isUserLogged()) {
+            setCartStep('payment');
+          } else {
+            alert("Please log in to proceed with payment.");
+            navigate("/login");
+          }
+        }} />
+      )}
+      {cartStep === 'payment' && (
+          <PaymentSection onSubmit={handlePaymentSubmit}/>
+      )}
+      {cartStep === 'confirmation' && (<OrderConfirmation items={confirmationData}/>)}
     </div>
+  </div>
   );
 };
 

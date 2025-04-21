@@ -4,6 +4,7 @@ import Login from "./components/Login";
 import Signup from "./components/Signup";
 import ProductPage from "./components/ProductPage";
 import MainMenu from "./components/MainMenu";
+import ProfilePage from "./components/ProfilePage";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -44,6 +45,7 @@ function App() {
         {/* Main navigation pages */}
         <Route path="/product-page" element={<ProductPage />} />
         <Route path="/main-menu" element={<MainMenu />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
         {/* Product category routes */}
         <Route path="/sneakers" element={<SneakersPage />} />
