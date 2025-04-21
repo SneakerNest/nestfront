@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { isUserLogged } from "../utils/auth";
+import { Link } from "react-router-dom";
+
 
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState(false);
@@ -32,8 +34,11 @@ const Navbar = () => {
       <nav className="w-full bg-white text-black shadow-md px-6 py-4 flex items-center justify-between fixed top-0 z-50">
         {/* Left Section */}
         <div className="flex items-center space-x-4">
-          <img src={require("../assets/2.png")} alt="Logo" className="h-16 w-auto" />
+        <Link to="/">
+    <img src={require("../assets/2.png")} alt="Logo" className="h-16 w-auto" />
+       </Link>
         </div>
+
 
         {/* Search Bar */}
         <div className="flex-1 mx-6 max-w-lg">
