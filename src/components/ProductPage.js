@@ -20,6 +20,7 @@ function ProductPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSizePopup, setActiveSizePopup] = useState(null);
   const [selectedSizes, setSelectedSizes] = useState({});
+  const [showDescription, setShowDescription] = useState({});
 
   const { toggleWishlistItem, isInWishlist } = useContext(WishlistContext);
   const { addToCart, isInCart } = useContext(CartContext);
@@ -54,7 +55,8 @@ function ProductPage() {
   filteredProducts = filteredProducts.filter(
     (p) =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchQuery.toLowerCase())
+      p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -62,6 +64,7 @@ function ProductPage() {
     if (sortOrder === "high-to-low") return b.price - a.price;
     if (sortOrder === "rating-high-to-low") return b.rating - a.rating;
     if (sortOrder === "rating-low-to-high") return a.rating - b.rating;
+    if (sortOrder === "popularity-high-to-low") return b.orderCount - a.orderCount;
     return 0;
   });
 
@@ -75,6 +78,19 @@ function ProductPage() {
       addToCart({ ...product, size: selectedSize });
       setActiveSizePopup(null);
     }
+  };
+
+  const toggleDescription = (productId) => {
+    setShowDescription(prev => ({
+      ...prev,
+      [productId]: !prev[productId]
+    }));
+  };
+
+  // Calculate popularity score out of 100 based on orderCount
+  const calculatePopularity = (orderCount) => {
+    const maxOrderCount = Math.max(...products.map(p => p.orderCount));
+    return Math.round((orderCount / maxOrderCount) * 100);
   };
 
   return (
@@ -103,6 +119,7 @@ function ProductPage() {
           <option value="high-to-low">Price: High to Low</option>
           <option value="rating-high-to-low">Rating: High to Low</option>
           <option value="rating-low-to-high">Rating: Low to High</option>
+          <option value="popularity-high-to-low">Popularity: High to Low</option>
         </select>
 
         {/* Search Input */}
@@ -127,15 +144,45 @@ function ProductPage() {
       <div className="product-grid">
         {sortedProducts.length > 0 ? (
           sortedProducts.map((product) => (
-            <Link to={`/product/${product.id}`} key={product.id} className="product-card-link">
-              <div className="product-card">
+            <div className="product-card" key={product.id}>
+              <Link to={`/product/${product.id}`} className="product-card-image">
                 <img
                   src={product.image}
                   alt={product.name}
                   className="product-img"
                 />
+              </Link>
+              <div className="product-info">
                 <h3 className="product-title">{product.name}</h3>
                 <p className="product-price">${product.price.toFixed(2)}</p>
+                
+                {/* Popularity Score */}
+                <div className="popularity-score">
+                  <span>Popularity: {calculatePopularity(product.orderCount)}/100</span>
+                  <div className="popularity-bar">
+                    <div 
+                      className="popularity-fill" 
+                      style={{width: `${calculatePopularity(product.orderCount)}%`}}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Description Toggle Button */}
+                <button 
+                  className="description-toggle"
+                  onClick={() => toggleDescription(product.id)}
+                >
+                  {showDescription[product.id] ? "Hide Details" : "Show Details"}
+                </button>
+                
+                {/* Description */}
+                {showDescription[product.id] && (
+                  <div className="product-description">
+                    <p>{product.description}</p>
+                    <p className="product-category">Category: {product.category}</p>
+                  </div>
+                )}
+                
                 <div className="product-actions">
                   <div className="cart-btn" style={{ position: "relative" }}>
                     <FontAwesomeIcon
@@ -198,7 +245,7 @@ function ProductPage() {
                   />
                 </div>
               </div>
-            </Link>
+            </div>
           ))
         ) : (
           <p style={{ marginTop: "20px", fontWeight: "bold" }}>
