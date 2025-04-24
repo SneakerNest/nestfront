@@ -131,7 +131,7 @@ const ProductManager = () => {
         return {
           ...o,
           orderItems: o.orderItems.map(item =>
-            item.productID === productID
+            item.id === productID
               ? { ...item, commentStatus: newStatus }
               : item
           )
@@ -156,7 +156,7 @@ const ProductManager = () => {
       if (!isNaN(parsed) && parsed >= 0) {
         setStock(prev =>
           prev.map(item =>
-            item.productID === productID ? { ...item, stock: parsed } : item
+            item.id === productID ? { ...item, stock: parsed } : item
           )
         );
       }
@@ -336,7 +336,7 @@ const ProductManager = () => {
               </thead>
               <tbody>
                 {allCommentItems.map(item => (
-                  <tr key={`${item.orderID}-${item.productID}`}>
+                  <tr key={`${item.orderID}-${item.id}`}>
                     <td>{item.orderID}</td>
                     <td>{item.orderNumber}</td>
                     <td>{item.productName}</td>
@@ -347,13 +347,14 @@ const ProductManager = () => {
                         onChange={(e) =>
                           handleCommentStatusChange(
                             item.orderID,
-                            item.productID,
+                            item.id,
                             e.target.value
                           )
                         }
                       >
                         <option value="Awaiting">Awaiting</option>
                         <option value="Approved">Approved</option>
+                        <option value="Disapproved">Disapproved</option>
                       </select>
                     </td>
                   </tr>
