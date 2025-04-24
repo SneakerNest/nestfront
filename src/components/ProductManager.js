@@ -1,262 +1,369 @@
 import React, { useState, useEffect } from "react";
 import "../styles/ProductManager.css";
+import products from "../data/products";
 
 const ProductManager = () => {
-  const [products, setProducts] = useState([]);
-  const [newProduct, setNewProduct] = useState({
+  const [activeTab, setActiveTab] = useState("stock");
+  const [orders, setOrders] = useState([]);
+  const [stock, setStock] = useState([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [formData, setFormData] = useState({
     name: "",
+    category: "",
     stock: "",
-    category: "Sneakers", // Default category is Sneakers
-    image: "",
-    sizes: "",
-    status: "Ordered", // Default status is Ordered
+    image: ""
   });
-  const [searchQuery, setSearchQuery] = useState("");
-  const [totalProducts, setTotalProducts] = useState(0);
-  const [totalStock, setTotalStock] = useState(0);
+  const rawStock = [
+    { id: 1, stock: 14 },
+    { id: 2, stock: 10 },
+    { id: 3, stock: 20 },
+    { id: 4, stock: 8 },
+    { id: 5, stock: 14 },
+    { id: 6, stock: 14 },
+    { id: 7, stock: 10 },
+    { id: 8, stock: 20 },
+    { id: 9, stock: 8 },
+    { id: 10, stock: 14 },
+    { id: 11, stock: 14 },
+    { id: 12, stock: 10 },
+    { id: 13, stock: 20 },
+    { id: 14, stock: 8 },
+    { id: 15, stock: 14 }
+  ];
 
-  // Load initial product data (mock data for now)
   useEffect(() => {
-    const initialProducts = [
-      { 
-        id: 1, 
-        name: "Sneaker A", 
-        price: 100, 
-        stock: 10, 
-        category: "Sneakers", 
-        image: "https://via.placeholder.com/220x250?text=Sneaker+A",
-        sizes: ["42", "43", "43", "45"],
-        units: [
-          { id: 1, status: "Ordered", size: "42" },
-          { id: 2, status: "Ordered", size: "43" },
-          { id: 3, status: "Ordered", size: "43" },
-          { id: 4, status: "Ordered", size: "45" },
-          { id: 5, status: "Ordered", size: "42" },
-        ],
-      },
-      { 
-        id: 2, 
-        name: "Casual B", 
-        price: 80, 
-        stock: 15, 
-        category: "Casual", 
-        image: "https://via.placeholder.com/220x250?text=Casual+B",
-        sizes: ["42", "43", "43", "45"],
-        units: [
-          { id: 1, status: "Ordered", size: "42" },
-          { id: 2, status: "Ordered", size: "43" },
-          { id: 3, status: "Ordered", size: "43" },
-          { id: 4, status: "Ordered", size: "45" },
-          { id: 5, status: "Ordered", size: "42" },
-        ],
+    const mockOrders = [
+      {
+        orderID: 1,
+        orderNumber: 1001,
+        totalPrice: "234.97",
+        deliveryStatus: "Delivered",
+        orderItems: [
+          {
+            orderID: 1,
+            productID: 1,
+            productName: "Converse Black",
+            quantity: 1,
+            purchasePrice: "85.49",
+            comment: "Fast delivery.",
+            commentStatus: "Awaiting"
+          },
+          {
+            orderID: 1,
+            productID: 2,
+            productName: "Dunk Blue",
+            quantity: 1,
+            purchasePrice: "116.99",
+            comment: "Great colors.",
+            commentStatus: "Awaiting"
+          }
+        ]
       },
       {
-        id: 3,
-        name: "Boot C",
-        price: 120,
-        stock: 5,
-        category: "Boots",
-        image: "https://via.placeholder.com/220x250?text=Boot+C",
-        sizes: ["42", "43", "43", "45"],
-        units: [
-          { id: 1, status: "Ordered", size: "42" },
-          { id: 2, status: "Ordered", size: "43" },
-          { id: 3, status: "Ordered", size: "43" },
-          { id: 4, status: "Ordered", size: "45" },
-          { id: 5, status: "Ordered", size: "42" },
-        ],
+        orderID: 2,
+        orderNumber: 1002,
+        totalPrice: "152.75",
+        deliveryStatus: "In Transit",
+        orderItems: [
+          {
+            orderID: 2,
+            productID: 3,
+            productName: "Nike Air Max",
+            quantity: 2,
+            purchasePrice: "59.99",
+            comment: "Most comfortable shoe I own.",
+            commentStatus: "Awaiting"
+          },
+          {
+            orderID: 2,
+            productID: 4,
+            productName: "Samba Grey",
+            quantity: 1,
+            purchasePrice: "32.77"
+          }
+        ]
+      },
+      {
+        orderID: 3,
+        orderNumber: 1003,
+        totalPrice: "89.00",
+        deliveryStatus: "Processing",
+        orderItems: [
+          {
+            orderID: 3,
+            productID: 5,
+            productName: "Air Jordan 1",
+            quantity: 1,
+            purchasePrice: "89.00",
+            comment: "No one at uni can match my drip when I have these on my feet.",
+            commentStatus: "Approved"
+          }
+        ]
       }
     ];
+  
+    setOrders(mockOrders);
 
-    setProducts(initialProducts);
-    updateTotals(initialProducts);
+    const merged = products.map(prod => {
+      const stockInfo = rawStock.find(s => s.id === prod.id);
+      return {
+        ...prod,
+        stock: stockInfo?.stock ?? 0
+      };
+    });
+    setStock(merged);
+    
   }, []);
+  
 
-  // Update total products and stock dynamically
-  useEffect(() => {
-    updateTotals(products);
-  }, [products]);
-
-  const updateTotals = (products) => {
-    const totalStock = products.reduce((sum, product) => sum + product.units.length, 0);
-    const totalProducts = products.length;
-    setTotalStock(totalStock);
-    setTotalProducts(totalProducts);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewProduct(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Add new product
-  const handleAddProduct = (e) => {
-    e.preventDefault();
-    const { name, stock, category, image, sizes, status } = newProduct;
-    if (!name || !stock || !category || !image || !sizes) {
-      alert("Please fill in all fields.");
-      return;
-    }
-
-    // Create units based on stock
-    const units = [];
-    const stockNumber = Number(stock);
-    for (let i = 0; i < stockNumber; i++) {
-      units.push({ id: i + 1, status: status, size: sizes.split(",")[i % sizes.split(",").length].trim() });
-    }
-
-    const newId = products.length ? products[products.length - 1].id + 1 : 1;
-    const productToAdd = {
-      id: newId,
-      name,
-      stock: stockNumber,
-      category,
-      image,
-      sizes: sizes.split(",").map(s => s.trim()),
-      units, // Store the units
-    };
-    setProducts([...products, productToAdd]);
-    setNewProduct({ name: "", stock: "", category: "Sneakers", image: "", sizes: "", status: "Ordered" });
-  };
-
-  // Handle changing status (e.g., Bought -> Shipped)
-  const handleStatusChange = (productId, unitId, newStatus) => {
-    setProducts(prev =>
-      prev.map(p =>
-        p.id === productId
-          ? {
-              ...p,
-              units: p.units.map(u =>
-                u.id === unitId ? { ...u, status: newStatus } : u
-              ),
-            }
-          : p
+  const handleDeliveryStatusChange = (orderID, newStatus) => {
+    setOrders(prev =>
+      prev.map(o =>
+        o.orderID === orderID ? { ...o, deliveryStatus: newStatus } : o
       )
     );
   };
 
-  // Delete a product
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      setProducts(products.filter(p => p.id !== id));
-    }
+  const handleCommentStatusChange = (orderID, productID, newStatus) => {
+    setOrders(prev =>
+      prev.map(o => {
+        if (o.orderID !== orderID) return o;
+        return {
+          ...o,
+          orderItems: o.orderItems.map(item =>
+            item.id === productID
+              ? { ...item, commentStatus: newStatus }
+              : item
+          )
+        };
+      })
+    );
   };
 
-  // Filter products based on search query (by name)
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
+  const allCommentItems = orders
+    .flatMap(order =>
+      order.orderItems
+        .filter(item => item.comment)
+        .map(item => ({
+          ...item,
+          orderNumber: order.orderNumber,
+          orderID: order.orderID
+        }))
+    );
+    
+    const handleStockInput = (productID, value) => {
+      const parsed = parseInt(value);
+      if (!isNaN(parsed) && parsed >= 0) {
+        setStock(prev =>
+          prev.map(item =>
+            item.id === productID ? { ...item, stock: parsed } : item
+          )
+        );
+      }
+    };
+    
   return (
     <div className="container">
       <h1 className="h1">Product Manager</h1>
 
-      {/* Dashboard Summary */}
-      <div className="dashboard-summary">
-        <p>Total Products: {totalProducts}</p>
-        <p>Total Stock: {totalStock}</p>
+      <div className="tab-buttons">
+        <button onClick={() => setActiveTab("stock")}>Stock Manager</button>
+        <button onClick={() => setActiveTab("orderStatus")}>Order Status</button>
+        <button onClick={() => setActiveTab("comments")}>Comment Approval</button>
       </div>
 
-      {/* Search Bar */}
-      <div className="filter-bar">
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
+      {activeTab === "stock" && (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="add-product-btn"
+          >
+            + Add Product
+          </button>
+          {showAddForm && (
+            <div className="modal-overlay">
+              <div className="modal">
+                <h3>Add New Product</h3>
+                <input
+                  type="text"
+                  placeholder="Product name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+                <input
+                  type="text"
+                  placeholder="Category"
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                />
+                <input
+                  type="number"
+                  placeholder="Stock"
+                  value={formData.stock}
+                  onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                />
+                <input
+                  type="text"
+                  placeholder="Image URL"
+                  value={formData.image}
+                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                />
 
-      {/* Add Product Form */}
-      <form onSubmit={handleAddProduct} className="product-form">
-        <input
-          type="text"
-          name="name"
-          placeholder="Product Name"
-          value={newProduct.name}
-          onChange={handleInputChange}
-        />
-        <input
-          type="number"
-          name="stock"
-          placeholder="Stock"
-          value={newProduct.stock}
-          onChange={handleInputChange}
-        />
-        <input
-          type="text"
-          name="category"
-          placeholder="Category"
-          value={newProduct.category}
-          onChange={handleInputChange}
-        />
-        <input
-          type="url"
-          name="image"
-          placeholder="Product Image URL"
-          value={newProduct.image}
-          onChange={handleInputChange}
-        />
-        <input
-          type="text"
-          name="sizes"
-          placeholder="Available Sizes (comma-separated)"
-          value={newProduct.sizes}
-          onChange={handleInputChange}
-        />
-        <button type="submit" className="add-btn">Add Product</button>
-      </form>
+                <div className="modal-actions">
+                  <button
+                    onClick={() => {
+                      const { name, category, stock: stockAmount, image } = formData;
+                      if (!name || !category || isNaN(parseInt(stock))) {
+                        alert("Please fill in all fields correctly.");
+                        return;
+                      }
 
-      {/* Products List */}
-      <div className="product-list">
-        <table>
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Product</th>
-              <th>Stock</th>
-              <th>Category</th>
-              <th>Sizes</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.map(p => (
-              <tr key={p.id}>
-                <td>
-                  <img className="product-img" src={p.image} alt={p.name} />
-                </td>
-                <td>{p.name}</td>
-                <td>{p.units.length}</td>
-                <td>{p.category}</td>
-                <td>{p.sizes.join(", ")}</td>
-                <td>
-                  {p.units.map(unit => (
-                    <div key={unit.id}>
-                      <span>{unit.size}: {unit.status}</span>
-                      <select 
-                        value={unit.status} 
-                        onChange={(e) => handleStatusChange(p.id, unit.id, e.target.value)}
-                      >
-                        <option value="Ordered">Ordered</option>
-                        <option value="Bought">Bought</option>
-                        <option value="Shipped">Shipped</option>
-                        <option value="Arrived">Arrived</option>
-                      </select>
-                    </div>
-                  ))}
-                </td>
-                <td>
-                  <button onClick={() => handleDelete(p.id)} className="delete-btn">
-                    Delete
+                      const newId = stock.length
+                        ? Math.max(...stock.map(p => p.id)) + 1
+                        : 1;
+
+                      const newProduct = {
+                        id: newId,
+                        name,
+                        category,
+                        stock: parseInt(stockAmount),
+                        image
+                      };
+
+                      setStock(prev => [...prev, newProduct]);
+                      setShowAddForm(false);
+                      setFormData({ name: "", category: "", stock: "", image: "" });
+                    }}
+                  >
+                    Add
                   </button>
-                </td>
+                  <button onClick={() => setShowAddForm(false)}>Cancel</button>
+                </div>
+              </div>
+            </div>
+          )}
+          <table className="stock-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Image</th>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Current Stock</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {stock.map(product => (
+                <tr key={product.id}>
+                  <td>{product.id}</td>
+                  <td>
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="product-thumbnail"
+                    />
+                  </td>
+                  <td>{product.name}</td>
+                  <td>{product.category}</td>
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      value={product.stock}
+                      onChange={(e) =>
+                        handleStockInput(product.id, e.target.value)
+                      }
+                      className="stock-input"
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {activeTab === "orderStatus" && (
+        <div>
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Order Number</th>
+                <th>Total Price</th>
+                <th>Delivery Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map(o => (
+                <tr key={o.orderID}>
+                  <td>{o.orderID}</td>
+                  <td>{o.orderNumber}</td>
+                  <td>${o.totalPrice}</td>
+                  <td>
+                    <select
+                      value={o.deliveryStatus}
+                      onChange={(e) =>
+                        handleDeliveryStatusChange(o.orderID, e.target.value)
+                      }
+                    >
+                      <option value="Processing">Processing</option>
+                      <option value="In Transit">In Transit</option>
+                      <option value="Delivered">Delivered</option>
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {activeTab === "comments" && (
+        <div>
+          {allCommentItems.length === 0 ? (
+            <p style={{ marginTop: "15px" }}><i>No comments found.</i></p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Order Number</th>
+                  <th>Product Name</th>
+                  <th>Comment</th>
+                  <th>Comment Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allCommentItems.map(item => (
+                  <tr key={`${item.orderID}-${item.id}`}>
+                    <td>{item.orderID}</td>
+                    <td>{item.orderNumber}</td>
+                    <td>{item.productName}</td>
+                    <td>{item.comment}</td>
+                    <td>
+                      <select
+                        value={item.commentStatus || "Awaiting"}
+                        onChange={(e) =>
+                          handleCommentStatusChange(
+                            item.orderID,
+                            item.id,
+                            e.target.value
+                          )
+                        }
+                      >
+                        <option value="Awaiting">Awaiting</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Disapproved">Disapproved</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
     </div>
   );
 };
