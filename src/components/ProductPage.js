@@ -9,6 +9,8 @@ import { CartContext } from '../context/CartContext';
 import { isUserLogged } from "../utils/auth";
 import { useNavigate } from "react-router-dom";
 
+// Main product listing component with filtering, sorting and search functionality
+// Displays all available products with options to add to cart or wishlist
 function ProductPage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
