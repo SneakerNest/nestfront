@@ -1,3 +1,5 @@
+// Product catalog data with details for the SneakerNest store
+// Each product has unique ID, name, price, category, image path, and rating
 const products = [
   {
     id: 1,
