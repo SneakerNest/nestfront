@@ -1,339 +1,207 @@
-/* ProductView.css */
-
 :root {
-    --primary-red: #e60023;
-    --text-dark: #111;
-    --text-light: #555;
-    --bg-light: #f8f8f8;
-    --font-base: 'Poppins', sans-serif;
-  }
-  
-  .product-view-page {
-    background-color: var(--bg-light);
-    padding: 0;
-    margin: 0;
-    font-family: var(--font-base);
-  }
-  /* 1) make sure the whole site stays in Poppins */
+  --primary-red: #e60023;
+  --text-dark: #111;
+  --text-light: #555;
+  --bg-light: #f8f8f8;
+  --font-base: 'Poppins', sans-serif;
+}
+
+.product-view-page {
+  background-color: var(--bg-light);
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-base);
+}
+
+/* 1) Ensure Poppins everywhere */
 body, input, select, button {
-    font-family: 'Poppins', sans-serif;
-  }
-  
-  /* 2) Product listing page */
-  .product-card h3.product-title {
-    font-family: 'Poppins', sans-serif;
-    font-size: 20px;      /* whatever your original size was */
-    font-weight: 600;     /* original weight */
-  }
-  
-  .product-card .product-price {
-    font-family: 'Poppins', sans-serif;
-    font-size: 18px;      /* original price size */
-    font-weight: 600;     /* original price weight */
-    color: #e60023;
-  }
-  
-  /* 3) Product view page */
-  .product-view-container {
-    font-family: 'Poppins', sans-serif;
-  }
-  
-  /* Title */
-  .product-view-info h1 {
-    font-family: 'Poppins', sans-serif;
-    font-size: 32px;    /* match your reference */
-    font-weight: 800;
-    margin: 0 0 8px;
-  }
-  .product-container { /* or .product-view, etc. */
-    background-color: #ffffff; /* your new grey */
-    padding: 60px 20px;
-  }
-  
-  /* “New!” badge & subtitle */
-  .product-view-info .badge-new {
-    font-family: 'Poppins', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    background: #f0f0f0;
-    padding: 4px 8px;
-    border-radius: 4px;
-    display: inline-block;
-    margin-bottom: 12px;
-  }
-  .product-view-info .subtitle {
-    font-family: 'Poppins', sans-serif;
-    font-size: 14px;
-    color: #777;
-    margin-bottom: 16px;
-  }
-  
-  /* Price */
-  .product-view-info .price {
-    font-family: 'Poppins', sans-serif;
-    font-size: 28px;   /* original reference size */
-    font-weight: 700;
-    color: #e60023;
-    margin: 0 0 24px;
-  }
-  
-  /* Description just under title/subtitle */
-  .product-view-info .description {
-    font-family: 'Poppins', sans-serif;
-    font-size: 16px;
-    line-height: 1.5;
-    color: #333;
-    margin-bottom: 24px;
-  }
-  
-  .product-view-container {
-    display: flex;
-    flex-wrap: wrap;
-    max-width: 1200px;
-    margin: 80px auto 40px;
-    background: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  }
-  
-  .image-section {
-    flex: 1 1 50%;
-    background: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-  }
-  
-  .product-main-img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-  }
-  
-  .info-section {
-    flex: 1 1 50%;
-    padding: 40px;
-    position: relative;
-  }
-  
-  .product-new-tag {
-    display: inline-block;
-    background: #ddd;
-    color: var(--text-dark);
-    text-transform: uppercase;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 4px 8px;
-    border-radius: 4px;
-    margin-bottom: 12px;
-  }
-  
-  .product-title {
-    font-size: 32px;
-    font-weight: 800;
-    color: var(--text-dark);
-    margin: 8px 0;
-  }
-  
-  .product-subtitle {
-    font-size: 14px;
-    color: var(--text-light);
-    margin-bottom: 20px;
-  }
-  
-  .product-description {
-    font-size: 16px;
-    color: var(--text-light);
-    line-height: 1.6;
-    margin-bottom: 20px;
-  }
-  
-  .product-price {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--primary-red);
-    margin-bottom: 24px;
-  }
-  
-  .color-options {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  
-  .color-dot {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid #ccc;
-    cursor: pointer;
-  }
-  .color-dot.red { background: var(--primary-red); border-color: var(--primary-red);}  
-  .color-dot.gray { background: #888; border-color: #888;}  
-  .color-dot.white { background: #fff; border-color: #ccc;}  
-  .color-dot.default { background: #000; border-color: #000;}  
-  .color-dot.active { outline: 2px solid var(--primary-red);}  
-  
-  .size-section {
-    margin-bottom: 32px;
-  }
-  
-  .size-label {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-dark);
-    margin-bottom: 8px;
-    display: block;
-  }
-  
-  .sizes {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  
-  .size-btn {
-    padding: 10px 14px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-dark);
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-  }
-  .size-btn:hover {
-    border-color: var(--primary-red);
-  }
-  .size-btn.selected {
-    background: var(--primary-red);
-    border-color: var(--primary-red);
-    color: #fff;
-  }
-  
-  .actions {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 40px;
-  }
-  
-  .cart-button,
-  .wishlist-button {
-    padding: 14px 24px;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    border: none;
-  }
-  .cart-button {
-    background: #000;
-    color: #fff;
-  }
-  .cart-button:hover {
-    background: var(--primary-red);
-  }
-  .wishlist-button {
-    background: #fff;
-    color: var(--text-dark);
-    border: 1px solid #ddd;
-  }
-  .wishlist-button:hover {
-    background: var(--primary-red);
-    color: #fff;
-  }
-  
-  /* Reviews Section */
-  .reviews-section {
-    padding: 40px 20px;
-    background: var(--bg-light);
-  }
-  
-  .reviews-section h3 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-dark);
-    margin: 0 0 24px 40px;
-  }
-  
-  .reviews-slider {
-    position: relative;
-    padding-bottom: 40px;
-  }
-  
-  .reviews-slider .slick-prev,
-  .reviews-slider .slick-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #fff;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    cursor: pointer;
-    z-index: 2;
-  }
-  .reviews-slider .slick-prev { left: 0; }
-  .reviews-slider .slick-next { right: 0; }
-  
-  .review-card {
-    background: #fff;
-    border-radius: 8px;
-    padding: 24px;
-    margin: 0 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  }
-  
-  .review-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 12px;
-  }
-  
-  .review-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  
-  .review-name {
-    font-size: 16px;
-    font-weight: 600;
-    margin: 0;
-    color: var(--text-dark);
-  }
-  
-  .review-time {
-    font-size: 12px;
-    color: var(--text-light);
-    margin: 2px 0;
-  }
-  
-  .review-stars svg {
-    margin-right: 4px;
-  }
-  
-  .review-text {
-    font-size: 14px;
-    line-height: 1.6;
-    color: var(--text-light);
-    margin: 0;
-  }
-  
-  @media (max-width: 768px) {
-    .product-view-container { flex-direction: column; }
-    .image-section, .info-section { flex: 1 1 100%; }
-    .reviews-slider .slick-prev,
-    .reviews-slider .slick-next { display: none; }
-  }
-  
+  font-family: var(--font-base);
+}
+
+/* 2) The white container */
+.product-view-container {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 80px auto 40px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* 3) Left side image */
+.image-section {
+  flex: 1 1 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+.product-main-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 4) Right side info */
+.info-section {
+  flex: 1 1 50%;
+  padding: 40px;
+  position: relative;
+}
+
+/* “New!” badge */
+.product-new-tag {
+  display: inline-block;
+  background: #ddd;
+  color: var(--text-dark);
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+/* Title: left‑aligned, smaller than before */
+.product-title {
+  font-family: var(--font-base);
+  font-size: 28px;    /* down from 32px */
+  font-weight: 700;   /* slightly lighter */
+  color: var(--text-dark);
+  margin: 8px 0 16px; /* some breathing room */
+  text-align: left;   /* ← key change */
+}
+
+/* Subtitle */
+.product-subtitle {
+  font-size: 14px;
+  color: var(--text-light);
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+/* Description under title/subtitle */
+.product-description {
+  font-size: 16px;
+  color: var(--text-light);
+  line-height: 1.6;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+/* Price: left‑aligned, smaller */
+.product-price {
+  font-family: var(--font-base);
+  font-size: 24px;    /* down from 28px */
+  font-weight: 600;   /* slightly lighter */
+  color: var(--primary-red);
+  margin: 0 0 24px;
+  text-align: left;   /* ← key change */
+  display: block;
+}
+
+/* Stock pill */
+.product-stock {
+  display: inline-block;
+  margin-bottom: 24px;
+  padding: 4px 10px;
+  background-color: #e0e0e0;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+.product-stock.low {
+  background-color: #fdecea;
+  color: #b82014;
+}
+
+/* Color swatches */
+.color-options {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.color-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  cursor: pointer;
+}
+.color-dot.default { background: #000; border-color: #000; }
+.color-dot.red     { background: var(--primary-red); border-color: var(--primary-red); }
+.color-dot.gray    { background: #888; border-color: #888; }
+.color-dot.white   { background: #fff; border-color: #ccc; }
+.color-dot.active  { outline: 2px solid var(--primary-red); }
+
+/* Size buttons */
+.size-section {
+  margin-bottom: 32px;
+}
+.size-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+  display: block;
+}
+.sizes {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.size-btn {
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dark);
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.size-btn:hover {
+  border-color: var(--primary-red);
+}
+.size-btn.selected {
+  background: var(--primary-red);
+  border-color: var(--primary-red);
+  color: #fff;
+}
+
+/* Action buttons */
+.actions {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.cart-button,
+.wishlist-button {
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+}
+.cart-button {
+  background: #000;
+  color: #fff;
+}
+.cart-button:hover {
+  background: var(--primary-red);
+}
+.wishlist-button {
+  background: #fff;
+  color: var(--text-dark);
+  border: 1px solid #ddd;
+}
+.wishlist-button:hover {
+  background: var(--primary-red);
+  color: #fff;
+}
