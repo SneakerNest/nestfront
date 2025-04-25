@@ -1,3 +1,8 @@
+/* Product Page Styling for SneakerNest Store
+ * Contains styles for the product grid, cards, filters, and interactive elements
+ * Responsive design with mobile breakpoints for different screen sizes
+ */
+
 /* 🌟 Ensure Content Starts Below the Navbar */
 .product-container {
   padding-top: 90px; /* Adjust based on navbar height */
