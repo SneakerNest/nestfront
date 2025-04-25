@@ -58,9 +58,8 @@ function ProductPage({ defaultCategory = "all" }) {
 
   const handleAddToCart = (product) => {
     const size = selectedSizes[product.id];
-    if (!size) return alert("Please select a size.");
-    if (!isUserLogged()) {
-      setShowLoginModal(true);
+    if (!size) {
+      alert("Please select a size.");
       return;
     }
     addToCart({ ...product, size });

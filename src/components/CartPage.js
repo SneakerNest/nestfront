@@ -16,6 +16,7 @@ export default function CartPage() {
   const [confirmationData, setConfirmationData] = useState([]);
   const [pendingReviews, setPendingReviews] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const navigate = useNavigate();
 
   const handlePaymentSubmit = () => {
@@ -44,8 +45,7 @@ export default function CartPage() {
               if (isUserLogged()) {
                 setCartStep("payment");
               } else {
-                alert("Please log in to proceed with payment.");
-                navigate("/login");
+                setShowLoginModal(true);
               }
             }}
           />
@@ -91,6 +91,27 @@ export default function CartPage() {
           </>
         )}
       </div>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="login-modal-overlay">
+          <div className="login-modal">
+            <h2>Please login to continue</h2>
+            <button
+              className="login-modal-btn"
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </button>
+            <button
+              className="login-modal-cancel"
+              onClick={() => setShowLoginModal(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
