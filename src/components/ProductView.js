@@ -1,10 +1,11 @@
 // src/components/ProductView.js
 import React, { useContext, useState } from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams, Navigate, useNavigate } from "react-router-dom";
 import products from "../data/products";
 import "../styles/ProductView.css";
 import { WishlistContext } from "../context/WishlistContext";
 import { CartContext } from "../context/CartContext";
+import { isUserLogged } from "../utils/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import Reviews from "./Reviews";
@@ -12,10 +13,12 @@ import Reviews from "./Reviews";
 const ProductView = () => {
   // 1) Hooks first
   const { id } = useParams();
+  const navigate = useNavigate();
   const { toggleWishlistItem, isInWishlist } = useContext(WishlistContext);
   const { addToCart } = useContext(CartContext);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState("default");
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // 2) Then find your product
   const product = products.find((p) => p.id === parseInt(id, 10));
@@ -35,6 +38,14 @@ const ProductView = () => {
       return;
     }
     addToCart({ ...product, size: selectedSize });
+  };
+
+  const handleAddToWishlist = () => {
+    if (!isUserLogged()) {
+      setShowLoginModal(true);
+      return;
+    }
+    toggleWishlistItem(product);
   };
 
   return (
@@ -102,7 +113,7 @@ const ProductView = () => {
             </button>
             <button
               className="wishlist-button"
-              onClick={() => toggleWishlistItem(product)}
+              onClick={handleAddToWishlist}
             >
               Favorite{" "}
               <FontAwesomeIcon
@@ -113,6 +124,27 @@ const ProductView = () => {
           </div>
         </div>
       </div>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="login-modal-overlay">
+          <div className="login-modal">
+            <h2>Please login to continue</h2>
+            <button
+              className="login-modal-btn"
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </button>
+            <button
+              className="login-modal-cancel"
+              onClick={() => setShowLoginModal(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Reviews carousel */}
       <Reviews />
