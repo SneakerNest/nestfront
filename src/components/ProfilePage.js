@@ -10,7 +10,7 @@ const ProfilePage = () => {
   const [reviews, setReviews] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState(null);
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(null);
   const [comment, setComment] = useState("");
   
   
@@ -83,35 +83,42 @@ const ProfilePage = () => {
   };
 
   const handleReviewSubmit = () => {
-    if (selectedOrder && selectedProductId && (comment.trim() || rating)) {
-      const newReviews = [];
+    if (!selectedOrder || !selectedProductId) return;
   
-      if (rating) {
-        newReviews.push({
-          orderId: selectedOrder.id,
-          productId: selectedProductId,
-          rating,
-          status: "approved" // rating is instantly saved
-        });
-      }
+    const trimmedComment = comment.trim();
   
-      if (comment.trim()) {
-        newReviews.push({
-          orderId: selectedOrder.id,
-          productId: selectedProductId,
-          comment,
-          status: "pending" // comment needs approval
-        });
-      }
-  
-      setReviews((prev) => [...prev, ...newReviews]);
-      setComment("");
-      setSelectedOrder(null);
-      setSelectedProductId(null);
+    if (!trimmedComment && !rating) {
+      alert("Please provide a comment or a rating.");
+      return;
     }
+  
+    const newReviews = [];
+  
+    if (rating) {
+      newReviews.push({
+        orderId: selectedOrder.id,
+        productId: selectedProductId,
+        rating,
+        status: "approved"
+      });
+    }
+  
+    if (trimmedComment) {
+      newReviews.push({
+        orderId: selectedOrder.id,
+        productId: selectedProductId,
+        comment: trimmedComment,
+        status: "pending"
+      });
+    }
+  
+    setReviews((prev) => [...prev, ...newReviews]);
+    setComment("");
+    setRating(null);
+    setSelectedOrder(null);
+    setSelectedProductId(null);
   };
   
-
   const activeOrders = userInfo.orders.filter(
     (order) => order.status === "processing" || order.status === "in_transit"
   );

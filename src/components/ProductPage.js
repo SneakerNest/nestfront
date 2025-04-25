@@ -62,6 +62,8 @@ function ProductPage() {
     if (sortOrder === "high-to-low") return b.price - a.price;
     if (sortOrder === "rating-high-to-low") return b.rating - a.rating;
     if (sortOrder === "rating-low-to-high") return a.rating - b.rating;
+    if (sortOrder === "popularity-high-to-low") return b.popularity - a.popularity;
+    if (sortOrder === "popularity-low-to-high") return a.popularity - b.popularity;
     return 0;
   });
 
@@ -103,6 +105,8 @@ function ProductPage() {
           <option value="high-to-low">Price: High to Low</option>
           <option value="rating-high-to-low">Rating: High to Low</option>
           <option value="rating-low-to-high">Rating: Low to High</option>
+          <option value="popularity-high-to-low">Popularity: High to Low</option>
+          <option value="popularity-low-to-high">Popularity: Low to High</option>
         </select>
 
         {/* Search Input */}

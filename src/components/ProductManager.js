@@ -126,16 +126,18 @@ const ProductManager = () => {
 
   const handleCommentStatusChange = (orderID, productID, newStatus) => {
     setOrders(prev =>
-      prev.map(o => {
-        if (o.orderID !== orderID) return o;
-        return {
-          ...o,
-          orderItems: o.orderItems.map(item =>
-            item.id === productID
-              ? { ...item, commentStatus: newStatus }
-              : item
-          )
-        };
+      prev.map(order => {
+        if (order.orderID !== orderID) return order;
+  
+        const updatedItems = order.orderItems
+          .map(item => {
+            if (item.productID !== productID) return item;
+            if (newStatus === "Disapproved") return null;
+            return { ...item, commentStatus: newStatus };
+          })
+          .filter(Boolean);
+  
+        return { ...order, orderItems: updatedItems };
       })
     );
   };
@@ -213,7 +215,7 @@ const ProductManager = () => {
                   <button
                     onClick={() => {
                       const { name, category, stock: stockAmount, image } = formData;
-                      if (!name || !category || isNaN(parseInt(stock))) {
+                      if (!name || !category || isNaN(parseInt(stockAmount))) {
                         alert("Please fill in all fields correctly.");
                         return;
                       }
@@ -336,7 +338,7 @@ const ProductManager = () => {
               </thead>
               <tbody>
                 {allCommentItems.map(item => (
-                  <tr key={`${item.orderID}-${item.id}`}>
+                  <tr key={`${item.orderID}-${item.productID}`}>
                     <td>{item.orderID}</td>
                     <td>{item.orderNumber}</td>
                     <td>{item.productName}</td>
@@ -347,7 +349,7 @@ const ProductManager = () => {
                         onChange={(e) =>
                           handleCommentStatusChange(
                             item.orderID,
-                            item.id,
+                            item.productID,
                             e.target.value
                           )
                         }
