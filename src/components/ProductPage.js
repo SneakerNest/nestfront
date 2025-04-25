@@ -21,6 +21,7 @@ function ProductPage({ defaultCategory = "all" }) {
   const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSizes, setSelectedSizes] = useState({});
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const { toggleWishlistItem, isInWishlist } = useContext(WishlistContext);
   const { addToCart } = useContext(CartContext);
@@ -58,6 +59,10 @@ function ProductPage({ defaultCategory = "all" }) {
   const handleAddToCart = (product) => {
     const size = selectedSizes[product.id];
     if (!size) return alert("Please select a size.");
+    if (!isUserLogged()) {
+      setShowLoginModal(true);
+      return;
+    }
     addToCart({ ...product, size });
   };
 
@@ -128,12 +133,11 @@ function ProductPage({ defaultCategory = "all" }) {
                     className={`wishlist-btn ${isInWishlist(product.id) ? "active" : ""}`}
                     onClick={(e) => {
                       e.preventDefault();
-                      if (isUserLogged()) {
-                        toggleWishlistItem(product);
-                      } else {
-                        alert("Please log in to add items to your wishlist.");
-                        navigate("/login");
+                      if (!isUserLogged()) {
+                        setShowLoginModal(true);
+                        return;
                       }
+                      toggleWishlistItem(product);
                     }}
                   >
                     <FontAwesomeIcon
@@ -196,6 +200,27 @@ function ProductPage({ defaultCategory = "all" }) {
           )}
         </div>
       </div>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="login-modal-overlay">
+          <div className="login-modal">
+            <h2>Please login to continue</h2>
+            <button
+              className="login-modal-btn"
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </button>
+            <button
+              className="login-modal-cancel"
+              onClick={() => setShowLoginModal(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="new-footer">
