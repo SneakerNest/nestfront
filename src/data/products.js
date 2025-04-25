@@ -29,7 +29,7 @@ const products = [
     id: 3,
     name: "Yeezy Slide Black",
     price: 119.99,
-    category: "slippers & sandals",
+    category: "slippersSandals",
     image: require("../assets/yeezyslideblack.jpg"),
     rating: 4.8,
 

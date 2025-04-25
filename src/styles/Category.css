@@ -4,7 +4,7 @@
 }
 
 .category-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     margin-bottom: 20px;
     font-weight: bold;
 }
@@ -39,7 +39,17 @@
 }
 
 .category-name {
-    font-size: 1.2rem;
-    margin-top: 10px;
-    font-weight: bold;
+    font-size: 1rem; /* smaller font */
+    margin-top: 8px;
+    font-weight: 600;
+    padding: 0 8px;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+    max-height: 2.6em;
 }
+
