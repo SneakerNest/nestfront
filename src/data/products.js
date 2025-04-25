@@ -170,6 +170,16 @@ const products = [
     stock: 16,
 
   },
+  {
+    id: 16,
+    name: "Gucci Horsebit Loafers Black",
+    price: 749.99,
+    category: "Casual",
+    image: require("../assets/Gucci-Horsebit-Loafers-Black.jpg"),
+    rating: 4.8,
+    popularity: 92,
+    stock: 7,
+  }
 ];
 
 export default products;
