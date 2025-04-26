@@ -24,11 +24,10 @@
     "webpack": "^5.98.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "dev": "cross-env NODE_ENV=development nodemon --watch src --ext js,jsx,css --exec \"npm start\"",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "dev": "craco start"
   },
   "eslintConfig": {
     "extends": [
@@ -49,6 +48,7 @@
     ]
   },
   "devDependencies": {
+    "@craco/craco": "^7.1.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.15",
     "autoprefixer": "^10.4.14",
     "cross-env": "^7.0.3",
