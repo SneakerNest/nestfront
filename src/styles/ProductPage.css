@@ -138,21 +138,25 @@
 
 /* Add to Cart button */
 .add-cart-btn {
-  padding: 6px 12px;
-  font-size: 14px;
+  padding: 6px 12px;  /* Reduced padding */
+  font-size: 12px;    /* Smaller font size */
   background-color: #000;
-  color: #fff;
+  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  width: auto;        /* Let button size to content */
+  min-width: 80px;    /* Minimum width to maintain readability */
 }
+
+.add-cart-btn:hover:not(:disabled) {
+  background-color: #333;
+}
+
 .add-cart-btn:disabled {
-  background-color: #aaa;
+  background-color: #ccc;
   cursor: not-allowed;
-}
-.add-cart-btn:not(:disabled):hover {
-  background-color: #e63946;
 }
 
 /* Wishlist heart button (inside card) */

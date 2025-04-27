@@ -100,17 +100,34 @@ function ProductPage({ defaultCategory = "all" }) {
     setSelectedSizes(prev => ({ ...prev, [productId]: size }));
   };
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = async (product, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
     const size = selectedSizes[product.productID];
     if (!size) {
       alert("Please select a size.");
       return;
     }
+
     if (!isUserLogged()) {
       setShowLoginModal(true);
       return;
     }
-    addToCart({ ...product, size });
+
+    try {
+      await addToCart({
+        ...product,
+        size: size
+      });
+      // Show success message
+      alert("Product added to cart successfully!");
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Failed to add product to cart. Please try again.");
+    }
   };
 
   if (loading) return <div className="loading">Loading products...</div>;
@@ -220,14 +237,10 @@ function ProductPage({ defaultCategory = "all" }) {
 
                     <button
                       className="add-cart-btn"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleAddToCart(product);
-                      }}
-                      disabled={!selectedSizes[product.productID]}
+                      onClick={(e) => handleAddToCart(product, e)}
+                      disabled={!selectedSizes[product.productID] || product.stock === 0}
                     >
-                      Add to Cart
+                      {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
                     </button>
                   </div>
                 </div>

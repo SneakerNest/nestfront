@@ -84,10 +84,15 @@ export const CartProvider = ({ children }) => {
       setLoading(true);
       const customerID = isUserLogged()?.customerID || null;
       const productID = product.id || product.productID;
-
-      await axios.post(
+      
+      console.log('Adding to cart:', { productID, customerID });
+      
+      const response = await axios.post(
         `${API_BASE_URL}/cart/product/add/${productID}`,
-        { customerID },
+        { 
+          customerID,
+          size: product.size // Include size in the request
+        },
         { 
           withCredentials: true,
           headers: {
@@ -96,7 +101,9 @@ export const CartProvider = ({ children }) => {
         }
       );
       
-      await fetchCart();
+      console.log('Add to cart response:', response.data);
+      await fetchCart(); // Refresh cart after adding
+      
     } catch (err) {
       console.error('Error adding to cart:', err);
       setError(err.response?.data?.error || err.message);
