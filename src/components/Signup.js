@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { registerUser } from "../services/authService";
 import "../styles/Signup.css";
 import logo from "../assets/2.png";
 import background from "../assets/background.jpg";
@@ -7,6 +8,7 @@ import background from "../assets/background.jpg";
 const Signup = () => {
   const navigate = useNavigate();
   const [showAddress, setShowAddress] = useState(false);
+  const [error, setError] = useState("");
 
   const [userInfo, setUserInfo] = useState({
     name: "",
@@ -35,19 +37,53 @@ const Signup = () => {
     e.preventDefault();
     const email = userInfo.email.toLowerCase();
 
-    if (email.endsWith("@salesmanager.com")) {
-      navigate("/salesmanager");
-    } else if (email.endsWith("@productmanager.com")) {
-      navigate("/productmanager");
+    if (email.endsWith("@salesmanager.com") || email.endsWith("@productmanager.com")) {
+      handleRegistration();
     } else {
       setShowAddress(true);
     }
   };
 
-  const handleFinalSubmit = (e) => {
+  const handleFinalSubmit = async (e) => {
     e.preventDefault();
-    console.log("User Info:", userInfo);
-    navigate("/login");
+    await handleRegistration();
+  };
+
+  const handleRegistration = async () => {
+    try {
+      const userData = {
+        name: userInfo.name,
+        email: userInfo.email,
+        username: userInfo.username,
+        password: userInfo.password,
+        ...(showAddress && {
+          address: {
+            addressTitle: userInfo.addressTitle,
+            country: userInfo.country,
+            city: userInfo.city,
+            province: userInfo.province,
+            zipCode: userInfo.zipCode,
+            streetAddress: userInfo.streetAddress,
+          },
+          phone: userInfo.phone,
+          ...(userInfo.taxId && { taxID: userInfo.taxId }), // Only include taxID if it exists
+        }),
+      };
+
+      console.log('Sending registration data:', userData);
+      const response = await registerUser(userData);
+      
+      if (response.role === "salesManager") {
+        navigate("/salesmanager");
+      } else if (response.role === "productManager") {
+        navigate("/productmanager");
+      } else {
+        navigate("/login");
+      }
+    } catch (err) {
+      setError(err.message);
+      console.error("Registration error:", err);
+    }
   };
 
   return (
@@ -57,6 +93,8 @@ const Signup = () => {
       <div className="signup-box">
         <img src={logo} alt="SneakerNest Logo" className="logo" />
         <h2>{showAddress ? "Enter Address Info" : "SIGN UP"}</h2>
+
+        {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={showAddress ? handleFinalSubmit : handleSubmit}>
           {!showAddress && (
@@ -106,7 +144,7 @@ const Signup = () => {
                 onChange={handleInputChange}
                 required
               />
-               <input
+              <input
                 type="text"
                 name="phone"
                 placeholder="Phone Number"
@@ -120,7 +158,6 @@ const Signup = () => {
                 placeholder="Tax ID"
                 value={userInfo.taxId}
                 onChange={handleInputChange}
-                required
               />
               <input
                 type="text"

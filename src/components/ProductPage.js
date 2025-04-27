@@ -1,15 +1,15 @@
 // src/components/ProductPage.js
 import React, { useState, useEffect, useContext } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import "../styles/ProductPage.css";
-import products from "../data/products";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as faHeartOutline } from "@fortawesome/free-regular-svg-icons";
 import { WishlistContext } from "../context/WishlistContext";
 import { CartContext } from "../context/CartContext";
 import { isUserLogged } from "../utils/auth";
+import { getAllProducts } from "../services/productService";
 import { FaInstagram, FaFacebookF, FaTiktok } from "react-icons/fa";
+import "../styles/ProductPage.css";
 
 function ProductPage({ defaultCategory = "all" }) {
   const location = useLocation();
@@ -17,6 +17,9 @@ function ProductPage({ defaultCategory = "all" }) {
   const params = new URLSearchParams(location.search);
   const externalSearch = params.get("search")?.toLowerCase() || "";
 
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [sortOrder, setSortOrder] = useState("default");
   const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,60 +29,104 @@ function ProductPage({ defaultCategory = "all" }) {
   const { toggleWishlistItem, isInWishlist } = useContext(WishlistContext);
   const { addToCart } = useContext(CartContext);
 
+  const categories = [
+    { value: "all", label: "All Categories" },
+    { value: "sneakers", label: "Sneakers" },
+    { value: "casual", label: "Casual" },
+    { value: "boots", label: "Boots" },
+    { value: "slippers", label: "Slippers & Sandals" }
+  ];
+
   useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllProducts();
+        // Log the data to check if we're getting stock information
+        console.log('Products loaded:', data);
+        setProducts(Array.isArray(data) ? data : []);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load products. Please try again later.');
+        console.error('Error loading products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
     if (externalSearch) setSearchQuery(externalSearch);
   }, [externalSearch]);
 
-  const categories = ["all", ...new Set(products.map((p) => p.category))];
+  const getImageUrl = (picturePath) => {
+    if (!picturePath) return '/placeholder.jpg';
+    return `http://localhost:5001/api/v1/images/${picturePath}`;
+  };
 
-  let filtered = selectedCategory === "all"
-    ? products
-    : products.filter((p) => p.category.toLowerCase() === selectedCategory.toLowerCase());
+  const filteredProducts = products.filter(product => {
+    const matchesCategory = selectedCategory === "all" 
+      ? true 
+      : product.brand?.toLowerCase() === selectedCategory.toLowerCase();
 
-  filtered = filtered.filter(
-    (p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    const matchesSearch = searchQuery === "" 
+      ? true 
+      : (product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         product.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         product.description?.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  const sortedProducts = [...filtered].sort((a, b) => {
-    if (sortOrder === "low-to-high") return a.price - b.price;
-    if (sortOrder === "high-to-low") return b.price - a.price;
-    if (sortOrder === "rating-high-to-low") return b.rating - a.rating;
-    if (sortOrder === "rating-low-to-high") return a.rating - b.rating;
-    if (sortOrder === "popularity-high-to-low") return b.popularity - a.popularity;
-    if (sortOrder === "popularity-low-to-high") return a.popularity - b.popularity;
-    return 0;
+    return matchesCategory && matchesSearch;
+  });
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (sortOrder) {
+      case "low-to-high":
+        return (parseFloat(a.discountedPrice) || 0) - (parseFloat(b.discountedPrice) || 0);
+      case "high-to-low":
+        return (parseFloat(b.discountedPrice) || 0) - (parseFloat(a.discountedPrice) || 0);
+      case "rating-high-to-low":
+        return (parseFloat(b.overallRating) || 0) - (parseFloat(a.overallRating) || 0);
+      case "rating-low-to-high":
+        return (parseFloat(a.overallRating) || 0) - (parseFloat(b.overallRating) || 0);
+      case "popularity-high-to-low":
+        return (parseInt(b.popularity) || 0) - (parseInt(a.popularity) || 0);
+      case "popularity-low-to-high":
+        return (parseInt(a.popularity) || 0) - (parseInt(b.popularity) || 0);
+      default:
+        return 0;
+    }
   });
 
   const handleSizeChange = (productId, size) => {
-    setSelectedSizes((prev) => ({ ...prev, [productId]: size }));
+    setSelectedSizes(prev => ({ ...prev, [productId]: size }));
   };
 
   const handleAddToCart = (product) => {
-    const size = selectedSizes[product.id];
+    const size = selectedSizes[product.productID];
     if (!size) {
       alert("Please select a size.");
+      return;
+    }
+    if (!isUserLogged()) {
+      setShowLoginModal(true);
       return;
     }
     addToCart({ ...product, size });
   };
 
+  if (loading) return <div className="loading">Loading products...</div>;
+  if (error) return <div className="error">{error}</div>;
+
   return (
     <>
       <div className="product-container">
-        {/* Filter Bar */}
-        <div
-          className="filter-bar"
-          style={{ justifyContent: "space-between", gap: "10px", flexWrap: "wrap" }}
-        >
+        <div className="filter-bar">
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
           >
-            {categories.map((cat, i) => (
-              <option key={i} value={cat}>
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+            {categories.map((cat) => (
+              <option key={cat.value} value={cat.value}>
+                {cat.label}
               </option>
             ))}
           </select>
@@ -101,35 +148,30 @@ function ProductPage({ defaultCategory = "all" }) {
             type="text"
             placeholder="Search products..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value.trim())}
             className="search-input"
-            style={{
-              padding: "10px",
-              fontSize: "16px",
-              borderRadius: "5px",
-              border: "1px solid #ddd",
-              flex: 1,
-              minWidth: "150px",
-            }}
           />
         </div>
 
-        {/* Product Grid */}
         <div className="product-grid">
-          {sortedProducts.length > 0 ? (
+          {sortedProducts.length === 0 ? (
+            <div className="no-products">No products found</div>
+          ) : (
             sortedProducts.map((product) => (
               <Link
-                to={`/product/${product.id}`}
-                key={product.id}
+                to={`/product/${product.productID}`}
+                key={product.productID}
                 className="product-card-link"
               >
                 <div className="product-card">
-                  {product.stock < 10 && (
-                    <div className="stock-badge">Limited Stock</div>
-                  )}
+                  {product.stock === 0 ? (
+                    <div className="stock-badge out-of-stock">Out of Stock</div>
+                  ) : product.stock < 10 ? (
+                    <div className="stock-badge">Limited Stock: {product.stock}</div>
+                  ) : null}
 
                   <button
-                    className={`wishlist-btn ${isInWishlist(product.id) ? "active" : ""}`}
+                    className={`wishlist-btn ${isInWishlist(product.productID) ? "active" : ""}`}
                     onClick={(e) => {
                       e.preventDefault();
                       if (!isUserLogged()) {
@@ -140,40 +182,39 @@ function ProductPage({ defaultCategory = "all" }) {
                     }}
                   >
                     <FontAwesomeIcon
-                      icon={isInWishlist(product.id) ? faHeartSolid : faHeartOutline}
+                      icon={isInWishlist(product.productID) ? faHeartSolid : faHeartOutline}
                     />
                   </button>
 
                   <img
-                    src={product.image}
+                    src={getImageUrl(product.pictures?.[0])}
                     alt={product.name}
                     className="product-img"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = '/placeholder.jpg';
+                    }}
                   />
 
                   <h3 className="product-title">{product.name}</h3>
 
                   <p className="product-price">
-                    ${product.price.toFixed(2)}
+                    ${Number(product.unitPrice).toFixed(2)}
                   </p>
 
-                  <div
-                    className="product-actions"
-                    style={{ gap: "8px", justifyContent: "center" }}
-                  >
+                  <div className="product-actions">
                     <select
-                      value={selectedSizes[product.id] || ""}
+                      value={selectedSizes[product.productID] || ""}
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                       }}
-                      onChange={(e) => handleSizeChange(product.id, e.target.value)}
+                      onChange={(e) => handleSizeChange(product.productID, e.target.value)}
                       className="size-dropdown"
                     >
                       <option value="">Size</option>
-                      {["36", "37", "38", "39", "40", "41", "42", "43", "44"].map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
+                      {[36, 37, 38, 39, 40, 41, 42, 43, 44].map(size => (
+                        <option key={size} value={size}>{size}</option>
                       ))}
                     </select>
 
@@ -184,7 +225,7 @@ function ProductPage({ defaultCategory = "all" }) {
                         e.stopPropagation();
                         handleAddToCart(product);
                       }}
-                      disabled={!selectedSizes[product.id]}
+                      disabled={!selectedSizes[product.productID]}
                     >
                       Add to Cart
                     </button>
@@ -192,36 +233,24 @@ function ProductPage({ defaultCategory = "all" }) {
                 </div>
               </Link>
             ))
-          ) : (
-            <p style={{ marginTop: "20px", fontWeight: "bold" }}>
-              No products found.
-            </p>
           )}
         </div>
       </div>
 
-      {/* Login Modal */}
       {showLoginModal && (
         <div className="login-modal-overlay">
           <div className="login-modal">
             <h2>Please login to continue</h2>
-            <button
-              className="login-modal-btn"
-              onClick={() => navigate("/login")}
-            >
+            <button className="login-modal-btn" onClick={() => navigate("/login")}>
               Login
             </button>
-            <button
-              className="login-modal-cancel"
-              onClick={() => setShowLoginModal(false)}
-            >
+            <button className="login-modal-cancel" onClick={() => setShowLoginModal(false)}>
               Cancel
             </button>
           </div>
         </div>
       )}
 
-      {/* Footer */}
       <footer className="new-footer">
         <div className="footer-container">
           <div className="footer-column">
@@ -241,7 +270,7 @@ function ProductPage({ defaultCategory = "all" }) {
               <li><Link to="/sneakers">Sneakers</Link></li>
               <li><Link to="/casual">Casual</Link></li>
               <li><Link to="/boots">Boots</Link></li>
-              <li><Link to="/slippers-sandals">Slippers & Sandals</Link></li>
+              <li><Link to="/slippers-sandals">Slippers & Sandals</Link></li>
             </ul>
           </div>
 

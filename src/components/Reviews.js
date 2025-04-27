@@ -1,82 +1,86 @@
-// src/components/Reviews.js
-import React, { useState } from "react";
-import Slider from "react-slick";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faStar,
-  faChevronLeft,
-  faChevronRight,
-} from "@fortawesome/free-solid-svg-icons";
-import reviews from "../data/reviewsdata";
+import { faStar as faStarSolid } from "@fortawesome/free-solid-svg-icons";
 import "../styles/Reviews.css";
 
-export default function Reviews({ productId }) {
-  const settings = {
-    dots: false,
-    infinite: true,
-    speed: 400,
-    slidesToShow: 3,
-    slidesToScroll: 1,
-    arrows: true,
-    prevArrow: <FontAwesomeIcon icon={faChevronLeft} className="slick-prev" />,
-    nextArrow: <FontAwesomeIcon icon={faChevronRight} className="slick-next" />,
-    responsive: [
-      { breakpoint: 992, settings: { slidesToShow: 2 } },
-      { breakpoint: 600, settings: { slidesToShow: 1 } },
-    ],
-  };
+const Reviews = ({ productId }) => {
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
 
-  // only show reviews for this product (or all if no productId passed)
-  const filtered = productId
-    ? reviews.filter((r) => r.productId === productId)
-    : reviews;
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5001/api/v1/reviews/${productId}`);
+        setReviews(response.data);
+        
+        // Calculate average rating
+        const avgRating = response.data.reduce((acc, review) => acc + review.rating, 0) / response.data.length;
+        setAverageRating(avgRating || 0);
+      } catch (error) {
+        console.error("Failed to fetch reviews", error);
+      }
+    };
 
-  return (
-    <div className="reviews-wrapper">
-      <Slider {...settings}>
-        {filtered.map((r) => (
-          <ReviewCard key={r.id} {...r} />
-        ))}
-      </Slider>
-    </div>
-  );
-}
-
-function ReviewCard({ avatar, name, rating, text, time }) {
-  const [expanded, setExpanded] = useState(false);
-  const preview =
-    text.length > 100 && !expanded ? text.slice(0, 100) + "…" : text;
+    fetchReviews();
+  }, [productId]);
 
   return (
-    <div className="review-card">
-      <div className="review-header">
-        <div className="review-header-bg" />
-        <img src={avatar} alt={name} className="review-avatar" />
-        <div className="review-header-content">
-          <div className="review-name">{name}</div>
-          <div className="review-stars">
-            {Array(rating)
-              .fill()
-              .map((_, i) => (
-                <FontAwesomeIcon key={i} icon={faStar} />
+    <div className="product-reviews">
+      <div className="reviews-header">
+        <h2>Customer Reviews</h2>
+        <div className="rating-summary">
+          <div className="average-rating">
+            <span>{averageRating.toFixed(1)}</span>
+            <div className="stars">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <FontAwesomeIcon
+                  key={star}
+                  icon={faStarSolid}
+                  className={star <= averageRating ? "star-filled" : "star-empty"}
+                />
               ))}
+            </div>
+            <p>Based on {reviews.length} reviews</p>
           </div>
         </div>
       </div>
 
-      <div className="review-body">
-        <p className="review-text">{preview}</p>
-        {text.length > 100 && !expanded && (
-          <span className="show-more" onClick={() => setExpanded(true)}>
-            Show More
-          </span>
+      <div className="review-cards">
+        {reviews.length === 0 ? (
+          <p className="no-reviews">No reviews yet. Be the first to review this product!</p>
+        ) : (
+          reviews.map((review) => (
+            <div key={review._id} className="review-card">
+              <div className="review-header">
+                <img
+                  src="/default-profile.png"
+                  alt="User Avatar"
+                  className="review-avatar"
+                />
+                <div className="reviewer-info">
+                  <h3>{review.username || "Anonymous"}</h3>
+                  <div className="review-rating">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <FontAwesomeIcon
+                        key={star}
+                        icon={faStarSolid}
+                        className={star <= review.rating ? "star-filled" : "star-empty"}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <p className="review-comment">{review.comment}</p>
+              {review.verifiedPurchase && (
+                <span className="verified-badge">Verified Purchase</span>
+              )}
+            </div>
+          ))
         )}
-      </div>
-
-      {/* only show the timestamp now */}
-      <div className="review-footer">
-        <span className="time">{time}</span>
       </div>
     </div>
   );
-}
+};
+
+export default Reviews;

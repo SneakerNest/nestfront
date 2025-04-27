@@ -1,99 +1,151 @@
 .cart-page {
-    display: flex;
-    height: 100vh;
-    gap: 1rem;
-    padding: 110px 40px 60px;
-  }
-  
-  .cart-left {
-    flex: 2;
-    overflow-y: auto;
-  }
-  
-  .cart-right {
-    flex: 1;
-    border-left: 1px solid #ccc;
-    padding-left: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-  .review-section-cart {
-    margin-top: 30px;
-    border-top: 1px solid #e0e0e0;
-    padding-top: 20px;
-  }
-  
-  .add-review-btn {
-    padding: 8px 16px;
-    background: #000;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .review-submitted {
-    background: #f9f9f9;
-    padding: 12px;
-    margin-bottom: 12px;
-    border-radius: 6px;
-    font-style: italic;
-  }
-  
-  .review-form {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 16px;
-    margin-top: 12px;
-  }
-  
-  .review-form .form-row {
-    margin-bottom: 12px;
-  }
-  
-  .review-form select,
-  .review-form textarea {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .stars-input .star {
-    font-size: 24px;
-    margin-right: 4px;
-    cursor: pointer;
-  }
-  
-  .form-actions {
-    display: flex;
-    gap: 12px;
-  }
-  
-  .submit-review-btn {
-    flex: 1;
-    padding: 8px;
-    background: #000;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .cancel-review-btn {
-    flex: 1;
-    padding: 8px;
-    background: #f0f0f0;
-    color: #333;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .submit-review-btn:disabled {
-    background: #aaa;
-    cursor: not-allowed;
-  }
-  
+  display: flex;
+  padding: 20px;
+  gap: 30px;
+  max-width: 1400px;
+  margin: 80px auto 0;
+  min-height: calc(100vh - 100px);
+}
+
+.cart-left {
+  flex: 2;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 20px;
+}
+
+.cart-right {
+  flex: 1;
+}
+
+.cart-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.empty-cart-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.empty-cart-message {
+  font-size: 18px;
+  color: #666;
+  text-align: center;
+}
+
+.order-summary {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.proceed-payment {
+  width: 100%;
+  padding: 12px;
+  background: #ff0000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin-top: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.proceed-payment:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.review-section-cart {
+  margin-top: 30px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 20px;
+}
+
+.add-review-btn {
+  padding: 8px 16px;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.review-submitted {
+  background: #f9f9f9;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  font-style: italic;
+}
+
+.review-form {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.review-form .form-row {
+  margin-bottom: 12px;
+}
+
+.review-form select,
+.review-form textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.stars-input .star {
+  font-size: 24px;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.submit-review-btn {
+  flex: 1;
+  padding: 8px;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel-review-btn {
+  flex: 1;
+  padding: 8px;
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submit-review-btn:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}

@@ -14,7 +14,6 @@ import ProfilePage from "./components/ProfilePage";
 
 import ProductView from "./components/ProductView";
 
-
 import SneakersPage from "./components/Sneakers";
 import CasualPage from "./components/Casual";
 import BootsPage from "./components/Boots";
@@ -26,42 +25,63 @@ import ManagerHome from "./components/ManagerHome";
 import ProductManager from "./components/ProductManager";
 import SalesManagerMenu from "./components/SalesManagerMenu";
 
+import ProtectedRoute from "./components/ProtectedRoute";
+import { CartProvider } from './context/CartContext';
+
 function App() {
   return (
-    <>
-      <Navbar />
-      <Routes>
-        {/* Cart & Wishlist */}
-        <Route path="/wishlist" element={<WishlistPage />} />
-        <Route path="/cart" element={<CartPage />} />
+    <CartProvider>
+      <>
+        <Navbar />
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
-        {/* Product detail (must come before the listing) */}
-        <Route path="/product/:id" element={<ProductView />} />
+          {/* Protected routes */}
+          <Route path="/cart" element={
+            <ProtectedRoute>
+              <CartPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/wishlist" element={
+            <ProtectedRoute>
+              <WishlistPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager" element={
+            <ProtectedRoute roles={['productManager']}>
+              <ManagerHome />
+            </ProtectedRoute>
+          } />
+          <Route path="/salesmanager" element={
+            <ProtectedRoute roles={['salesManager']}>
+              <SalesManagerMenu />
+            </ProtectedRoute>
+          } />
 
-        {/* Redirect root to login */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* Product routes */}
+          <Route path="/product/:id" element={<ProductView />} />
+          <Route path="/product-page" element={<ProductPage />} />
+          <Route path="/main-menu" element={<MainMenu />} />
+          <Route path="/shop" element={<ProductPage />} />
 
-        {/* Auth pages */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+          {/* Category routes */}
+          <Route path="/sneakers" element={<SneakersPage />} />
+          <Route path="/casual" element={<CasualPage />} />
+          <Route path="/boots" element={<BootsPage />} />
+          <Route path="/slippers-sandals" element={<SlippersSandalsPage />} />
 
-        {/* Main navigation */}
-        <Route path="/product-page" element={<ProductPage />} />
-        <Route path="/main-menu" element={<MainMenu />} />
-        <Route path="/profile" element={<ProfilePage />} />
-
-        {/* Category pages */}
-        <Route path="/sneakers" element={<SneakersPage />} />
-        <Route path="/casual" element={<CasualPage />} />
-        <Route path="/boots" element={<BootsPage />} />
-        <Route path="/slippers-sandals" element={<SlippersSandalsPage />} />
-
-        {/* Manager dashboards */}
-        <Route path="/manager" element={<ManagerHome />} />
-        <Route path="/manager/products" element={<ProductManager />} />
-        <Route path="/salesmanager" element={<SalesManagerMenu />} />
-      </Routes>
-    </>
+          {/* Default route */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </>
+    </CartProvider>
   );
 }
 
