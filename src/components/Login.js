@@ -1,41 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { setLoggedIn } from "../utils/auth";
+import { CartContext } from "../context/CartContext";
 import axios from "axios";
 import "../styles/Login.css";
 import { Link } from "react-router-dom";
 
-function Login({ cartContext }) {
+function Login() {
   const navigate = useNavigate();
+  const { mergeCartsOnLogin } = useContext(CartContext);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = async (credentials) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5001/api/v1/user/login', credentials);
-      
+      const response = await axios.post('http://localhost:5001/api/v1/user/login', {
+        username,
+        password
+      });
+
       if (response.data.user) {
-        // Store user data as a string
         localStorage.setItem('user', JSON.stringify(response.data.user));
         
-        // If you have cart context
-        if (cartContext && cartContext.mergeCartsOnLogin) {
-          await cartContext.mergeCartsOnLogin(response.data.user.customerID);
-        }
+        // Merge carts after login
+        await mergeCartsOnLogin(response.data.user.customerID);
         
-        navigate('/shop');
+        // Navigate back to cart if that's where user came from
+        const tempCart = localStorage.getItem('tempCart');
+        if (tempCart) {
+          localStorage.removeItem('tempCart');
+          navigate('/cart');
+        } else {
+          navigate('/shop');
+        }
       }
     } catch (error) {
-      console.error('Login failed:', error);
       setError('Login failed. Please check your credentials.');
     }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError("");
-    handleLogin({ username, password });
   };
 
   return (

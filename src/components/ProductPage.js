@@ -100,20 +100,10 @@ function ProductPage({ defaultCategory = "all" }) {
     setSelectedSizes(prev => ({ ...prev, [productId]: size }));
   };
 
-  const handleAddToCart = async (product, e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-
+  const handleAddToCart = async (product) => {
     const size = selectedSizes[product.productID];
     if (!size) {
       alert("Please select a size.");
-      return;
-    }
-
-    if (!isUserLogged()) {
-      setShowLoginModal(true);
       return;
     }
 
@@ -122,7 +112,6 @@ function ProductPage({ defaultCategory = "all" }) {
         ...product,
         size: size
       });
-      // Show success message
       alert("Product added to cart successfully!");
     } catch (error) {
       console.error("Error adding to cart:", error);

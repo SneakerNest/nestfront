@@ -20,6 +20,7 @@ import BootsPage from "./components/Boots";
 import SlippersSandalsPage from "./components/slippers & sandals";
 import WishlistPage from "./components/WishlistPage";
 import CartPage from "./components/CartPage";
+import CheckoutPage from "./components/CheckoutPage";
 
 import ManagerHome from "./components/ManagerHome";
 import ProductManager from "./components/ProductManager";
@@ -37,13 +38,9 @@ function App() {
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-
+          <Route path="/cart" element={<CartPage />} /> {/* Remove ProtectedRoute wrapper */}
+          
           {/* Protected routes */}
-          <Route path="/cart" element={
-            <ProtectedRoute>
-              <CartPage />
-            </ProtectedRoute>
-          } />
           <Route path="/wishlist" element={
             <ProtectedRoute>
               <WishlistPage />
@@ -62,6 +59,11 @@ function App() {
           <Route path="/salesmanager" element={
             <ProtectedRoute roles={['salesManager']}>
               <SalesManagerMenu />
+            </ProtectedRoute>
+          } />
+          <Route path="/checkout" element={
+            <ProtectedRoute>
+              <CheckoutPage />
             </ProtectedRoute>
           } />
 

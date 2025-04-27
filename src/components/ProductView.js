@@ -102,10 +102,6 @@ const ProductView = () => {
       alert("Please select a size.");
       return;
     }
-    if (!isUserLogged()) {
-      setShowLoginModal(true);
-      return;
-    }
     addToCart({ ...product, size: selectedSize });
   };
 

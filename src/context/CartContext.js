@@ -12,107 +12,68 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch cart data from backend
-  const fetchCart = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Skip the test request since we know GET works but POST doesn't
-      // Let's directly try the POST request with proper configuration
-      
-      const customerID = isUserLogged()?.customerID || null;
-      console.log('Fetching cart for customer:', customerID);
-      
-      const response = await axios.post(
-        `${API_BASE_URL}/cart/fetch`, 
-        { customerID },
-        { 
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          timeout: 8000 // Increase timeout to allow for slower responses
-        }
-      );
-      
-      console.log('Cart response:', response.data);
-      
-      if (response.data && response.data.products) {
-        const formattedItems = response.data.products.map(item => ({
-          id: item.productID,
-          name: item.name || item.productName,
-          price: item.unitPrice || item.productPrice,
-          discountedPrice: item.unitPrice ? 
-            item.unitPrice * (1 - item.discountPercentage / 100) : 
-            item.productPrice,
-          quantity: item.quantity,
-          size: item.size || "",
-          image: item.picturePath ? 
-            `${API_BASE_URL}/images/${item.picturePath.split(',')[0]}` : 
-            '/placeholder.jpg'
-        }));
-        
-        setCartItems(formattedItems);
-      } else {
-        setCartItems([]);
-      }
-    } catch (err) {
-      console.error('Error fetching cart:', err);
-      
-      if (err.response) {
-        setError(`Server error: ${err.response.status} - ${err.response.data?.error || 'Unknown error'}`);
-      } else if (err.request) {
-        setError('Cannot connect to the server. Please check if the server is running.');
-      } else {
-        setError(`Error: ${err.message}`);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Load cart on component mount
-  useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
-
-  // Add item to cart
   const addToCart = async (product) => {
     try {
       setLoading(true);
       const customerID = isUserLogged()?.customerID || null;
-      const productID = product.id || product.productID;
       
-      console.log('Adding to cart:', { productID, customerID });
+      console.log('Adding to cart:', { product, customerID });
       
       const response = await axios.post(
-        `${API_BASE_URL}/cart/product/add/${productID}`,
+        `${API_BASE_URL}/cart/product/add/${product.id || product.productID}`,
         { 
           customerID,
-          size: product.size // Include size in the request
+          size: product.size 
         },
         { 
           withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json'
-          }
+          headers: { 'Content-Type': 'application/json' }
         }
       );
       
       console.log('Add to cart response:', response.data);
       await fetchCart(); // Refresh cart after adding
+      return response.data;
       
     } catch (err) {
       console.error('Error adding to cart:', err);
       setError(err.response?.data?.error || err.message);
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  // Remove item from cart
+  const fetchCart = useCallback(async () => {
+    try {
+      setLoading(true);
+      const customerID = isUserLogged()?.customerID || null;
+      
+      const response = await axios.post(
+        `${API_BASE_URL}/cart/fetch`,
+        { customerID },
+        { withCredentials: true }
+      );
+      
+      if (response.data && response.data.products) {
+        setCartItems(response.data.products);
+      } else {
+        setCartItems([]);
+      }
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching cart:', err);
+      setError(err.response?.data?.error || err.message);
+      setCartItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
+
   const removeFromCart = async (productId) => {
     try {
       setLoading(true);
@@ -138,7 +99,6 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Delete item completely from cart
   const deleteFromCart = async (productId) => {
     try {
       setLoading(true);
@@ -164,11 +124,8 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Clear entire cart
   const clearCart = async () => {
     try {
-      // We don't have a direct backend endpoint for this,
-      // so we'll delete each item individually
       if (cartItems.length > 0) {
         setLoading(true);
         for (const item of cartItems) {
@@ -184,22 +141,20 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Handler for merging carts on login
   const mergeCartsOnLogin = async (customerID) => {
     try {
+      setLoading(true);
       await axios.post(
         `${API_BASE_URL}/cart/merge/${customerID}`,
         {},
-        { 
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+        { withCredentials: true }
       );
       await fetchCart();
     } catch (err) {
       console.error('Error merging carts:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -10,12 +10,12 @@ export default function CartPage() {
   const navigate = useNavigate();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  
+
   useEffect(() => {
     console.log("CartPage: Fetching cart data");
     refreshCart();
   }, [refreshCart]);
-  
+
   useEffect(() => {
     if (error && error.includes("Cannot connect") && retryCount < 3) {
       const timer = setTimeout(() => {
@@ -23,16 +23,23 @@ export default function CartPage() {
         refreshCart();
         setRetryCount(prev => prev + 1);
       }, 2000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [error, retryCount, refreshCart]);
-  
-  const calculateTotal = () => {
-    if (!cartItems || cartItems.length === 0) return "0.00";
-    return cartItems
-      .reduce((sum, item) => sum + ((item.discountedPrice || item.price) * item.quantity), 0)
-      .toFixed(2);
+
+  const handleProceedToCheckout = () => {
+    if (!isUserLogged()) {
+      setShowLoginModal(true);
+      return;
+    }
+    navigate('/checkout');
+  };
+
+  const handleLoginClick = () => {
+    // Store cart state in localStorage before redirecting
+    localStorage.setItem('tempCart', JSON.stringify(cartItems));
+    navigate('/login');
   };
 
   if (loading) return (
@@ -40,7 +47,7 @@ export default function CartPage() {
       <div className="loading">Loading your cart...</div>
     </div>
   );
-  
+
   if (error) return (
     <div className="cart-page-container">
       <div className="error">
@@ -75,12 +82,12 @@ export default function CartPage() {
           <span className="price-col">PRICE</span>
           <span className="total-col">TOTAL</span>
         </div>
-        
+
         {cartItems.map(item => (
-          <div key={`${item.id}-${item.size}`} className="cart-row">
+          <div key={`${item.productID}`} className="cart-row">
             <div className="cart-info">
-              <img 
-                src={item.image} 
+              <img
+                src={`http://localhost:5001/api/v1/images/${item.picturePath}`}
                 alt={item.name}
                 onError={(e) => {
                   e.target.onerror = null;
@@ -89,18 +96,17 @@ export default function CartPage() {
               />
               <div className="cart-item-details">
                 <h4>{item.name}</h4>
-                {item.size && <p className="item-size">Size: {item.size}</p>}
                 <p className="item-quantity">Qty: {item.quantity}</p>
                 <div className="cart-item-actions">
-                  <button 
-                    className="remove-button" 
-                    onClick={() => removeFromCart(item.id)}
+                  <button
+                    className="remove-button"
+                    onClick={() => removeFromCart(item.productID)}
                   >
                     Remove
                   </button>
-                  <button 
-                    className="delete-button" 
-                    onClick={() => deleteFromCart(item.id)}
+                  <button
+                    className="delete-button"
+                    onClick={() => deleteFromCart(item.productID)}
                   >
                     Delete All
                   </button>
@@ -108,10 +114,10 @@ export default function CartPage() {
               </div>
             </div>
             <div className="single-price">
-              ${Number(item.discountedPrice || item.price).toFixed(2)}
+              ${Number(item.unitPrice * (1 - (item.discountPercentage || 0) / 100)).toFixed(2)}
             </div>
             <div className="total-price">
-              ${((item.discountedPrice || item.price) * item.quantity).toFixed(2)}
+              ${(item.unitPrice * (1 - (item.discountPercentage || 0) / 100) * item.quantity).toFixed(2)}
             </div>
           </div>
         ))}
@@ -130,26 +136,27 @@ export default function CartPage() {
         <div className="cart-right">
           <div className="order-summary">
             <h2>ORDER SUMMARY</h2>
-            <div className="summary-row">
-              <span>SHIPPING:</span>
-              <span>Free</span>
-            </div>
-            <div className="summary-row subtotal-row">
-              <span>SUBTOTAL:</span>
-              <span>${calculateTotal()}</span>
+            <div className="summary-details">
+              <div className="summary-row">
+                <span>SHIPPING:</span>
+                <span>Free</span>
+              </div>
+              <div className="summary-row">
+                <span>SUBTOTAL:</span>
+                <span>
+                  ${cartItems.reduce((sum, item) => 
+                    sum + (item.unitPrice * (1 - (item.discountPercentage || 0) / 100) * item.quantity), 
+                    0
+                  ).toFixed(2)}
+                </span>
+              </div>
             </div>
             <button 
               className="proceed-payment"
-              onClick={() => {
-                if (!isUserLogged()) {
-                  setShowLoginModal(true);
-                } else {
-                  navigate('/checkout');
-                }
-              }}
-              disabled={cartItems.length === 0}
+              onClick={handleProceedToCheckout}
+              disabled={!cartItems.length}
             >
-              Proceed to Payment
+              {cartItems.length === 0 ? "Cart is Empty" : "Proceed to Payment"}
             </button>
           </div>
         </div>
@@ -158,13 +165,22 @@ export default function CartPage() {
       {showLoginModal && (
         <div className="login-modal-overlay">
           <div className="login-modal">
-            <h2>Please login to continue</h2>
-            <button className="login-modal-btn" onClick={() => navigate("/login")}>
-              Login
-            </button>
-            <button className="login-modal-cancel" onClick={() => setShowLoginModal(false)}>
-              Cancel
-            </button>
+            <h2>Login Required</h2>
+            <p>Please login to proceed with checkout. Your cart items will be saved.</p>
+            <div className="login-modal-buttons">
+              <button 
+                className="login-modal-btn" 
+                onClick={handleLoginClick}
+              >
+                Login
+              </button>
+              <button 
+                className="login-modal-cancel" 
+                onClick={() => setShowLoginModal(false)}
+              >
+                Continue Shopping
+              </button>
+            </div>
           </div>
         </div>
       )}

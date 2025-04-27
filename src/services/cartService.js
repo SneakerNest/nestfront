@@ -9,13 +9,42 @@ const API_BASE_URL = 'http://localhost:5001/api/v1';
  */
 export const getCart = async () => {
   const customerID = isUserLogged()?.customerID || null;
-  return axios.post(`${API_BASE_URL}/cart/fetch`, 
-    { customerID }, 
-    { 
-      withCredentials: true,
-      headers: { 'Content-Type': 'application/json' }
-    }
-  );
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/cart/fetch`,
+      { customerID },
+      { 
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching cart:', error);
+    throw error;
+  }
+};
+
+/**
+ * Merge carts upon login
+ * @param {number} customerID - Customer ID to merge carts for
+ * @returns {Promise} - API response
+ */
+export const mergeCartsOnLogin = async (customerID) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/cart/merge/${customerID}`,
+      {},
+      { 
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error merging carts:', error);
+    throw error;
+  }
 };
 
 /**
@@ -25,14 +54,20 @@ export const getCart = async () => {
  */
 export const addToCart = async (productId) => {
   const customerID = isUserLogged()?.customerID || null;
-  return axios.post(
-    `${API_BASE_URL}/cart/product/add/${productId}`, 
-    { customerID }, 
-    { 
-      withCredentials: true,
-      headers: { 'Content-Type': 'application/json' }
-    }
-  );
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/cart/product/add/${productId}`,
+      { customerID },
+      { 
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error adding to cart:', error);
+    throw error;
+  }
 };
 
 /**
@@ -62,22 +97,6 @@ export const deleteFromCart = async (productId) => {
   return axios.post(
     `${API_BASE_URL}/cart/product/delete/${productId}`, 
     { customerID }, 
-    { 
-      withCredentials: true,
-      headers: { 'Content-Type': 'application/json' }
-    }
-  );
-};
-
-/**
- * Merge carts upon login
- * @param {number} customerID - Customer ID to merge carts for
- * @returns {Promise} - API response
- */
-export const mergeCartsOnLogin = async (customerID) => {
-  return axios.post(
-    `${API_BASE_URL}/cart/merge/${customerID}`, 
-    {}, 
     { 
       withCredentials: true,
       headers: { 'Content-Type': 'application/json' }
