@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { isUserLogged, logout } from "../utils/auth";
 import products from "../data/products";
 import "../styles/ProfilePage.css";
+import { CartContext } from "../context/CartContext";
 
 const ProfilePage = () => {
+  const { clearCartOnLogout } = useContext(CartContext);
   const navigate = useNavigate();
   const loggedIn = isUserLogged(); // <- moved outside condition
   const [reviews, setReviews] = useState([]);
@@ -13,14 +15,10 @@ const ProfilePage = () => {
   const [rating, setRating] = useState(null);
   const [comment, setComment] = useState("");
   
-  
-  
   if (!loggedIn) {
     navigate("/login");
     return null;
   }
-
-
 
   const userInfo = {
     name: "Tan Berk Doker",
@@ -77,9 +75,14 @@ const ProfilePage = () => {
     ],
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await clearCartOnLogout(); // Clear the cart first
+      logout(); // Then perform logout
+      navigate('/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   const handleReviewSubmit = () => {

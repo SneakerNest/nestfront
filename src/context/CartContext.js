@@ -158,6 +158,20 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const clearCartOnLogout = async () => {
+    try {
+      setLoading(true);
+      setCartItems([]);
+      // Clear any cart-related data from localStorage
+      localStorage.removeItem('tempCart');
+    } catch (err) {
+      console.error('Error clearing cart on logout:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     cartItems,
     loading,
@@ -167,7 +181,8 @@ export const CartProvider = ({ children }) => {
     deleteFromCart,
     clearCart,
     refreshCart: fetchCart,
-    mergeCartsOnLogin
+    mergeCartsOnLogin,
+    clearCartOnLogout // Add this to the context value
   };
 
   return (

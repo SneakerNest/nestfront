@@ -165,21 +165,23 @@ export default function CartPage() {
       {showLoginModal && (
         <div className="login-modal-overlay">
           <div className="login-modal">
-            <h2>Login Required</h2>
-            <p>Please login to proceed with checkout. Your cart items will be saved.</p>
-            <div className="login-modal-buttons">
-              <button 
-                className="login-modal-btn" 
-                onClick={handleLoginClick}
-              >
-                Login
-              </button>
-              <button 
-                className="login-modal-cancel" 
-                onClick={() => setShowLoginModal(false)}
-              >
-                Continue Shopping
-              </button>
+            <div className="modal-content">
+              <h2>Login Required</h2>
+              <p>Please login to proceed with checkout.<br/>Your cart items will be saved.</p>
+              <div className="login-modal-buttons">
+                <button 
+                  className="login-modal-btn" 
+                  onClick={handleLoginClick}
+                >
+                  Login
+                </button>
+                <button 
+                  className="login-modal-cancel" 
+                  onClick={() => setShowLoginModal(false)}
+                >
+                  Continue Shopping
+                </button>
+              </div>
             </div>
           </div>
         </div>
