@@ -5,12 +5,20 @@ import '../styles/CartList.css';
 const CartList = () => {
   const { cartItems, removeFromCart } = useContext(CartContext);
 
+  if (!cartItems || cartItems.length === 0) {
+    return (
+      <div className="empty-cart">
+        Your shopping cart is empty 🛒
+      </div>
+    );
+  }
+
   return (
     <div className="cart-list">
       <div className="cart-header-row">
-        <span>PRODUCT</span>
-        <span>PRICE</span>
-        <span>TOTAL</span>
+        <span className="product-col">PRODUCT</span>
+        <span className="price-col">PRICE</span>
+        <span className="total-col">TOTAL</span>
       </div>
       
       {cartItems.map(item => (
@@ -24,11 +32,16 @@ const CartList = () => {
                 e.target.src = '/placeholder.jpg';
               }}
             />
-            <div>
+            <div className="cart-item-details">
               <h4>{item.name}</h4>
-              {item.size && <p>Size: {item.size}</p>}
-              <p>Qty: {item.quantity}</p>
-              <button onClick={() => removeFromCart(item.id)}>Remove</button>
+              {item.size && <p className="item-size">Size: {item.size}</p>}
+              <p className="item-quantity">Qty: {item.quantity}</p>
+              <button 
+                className="remove-button" 
+                onClick={() => removeFromCart(item.id)}
+              >
+                Remove
+              </button>
             </div>
           </div>
           <div className="single-price">
