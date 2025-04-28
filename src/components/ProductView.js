@@ -217,9 +217,15 @@ const ProductView = () => {
         </button>
         <button 
           className={`add-to-wishlist ${isInWishlist(product.productID) ? 'in-wishlist' : ''}`}
-          onClick={() => toggleWishlistItem(product)}
+          onClick={() => {
+            if (!isUserLogged()) {
+              navigate('/login');
+              return;
+            }
+            toggleWishlistItem(product);
+          }}
         >
-          <FontAwesomeIcon icon={faHeartSolid} className="heart-icon" />
+          <FontAwesomeIcon icon={isInWishlist(product.productID) ? faHeartSolid : faHeart} />
         </button>
       </div>
     </div>

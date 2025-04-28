@@ -1,97 +1,106 @@
 import React, { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { WishlistContext } from "../context/WishlistContext";
 import { CartContext } from "../context/CartContext";
+import { isUserLogged } from "../utils/auth";
 import "../styles/WishlistPage.css";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 const WishlistPage = () => {
-  const { wishlist, toggleWishlistItem } = useContext(WishlistContext);
+  const navigate = useNavigate();
+  const { wishlist, loading, error, toggleWishlistItem } = useContext(WishlistContext);
   const { addToCart } = useContext(CartContext);
   const [selectedSizes, setSelectedSizes] = useState({});
-  const step = 1; // Always show first step (Favorite) on wishlist page only
+
+  React.useEffect(() => {
+    if (!isUserLogged()) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   const handleSizeChange = (productId, size) => {
-    setSelectedSizes((prev) => ({ ...prev, [productId]: size }));
+    setSelectedSizes(prev => ({ ...prev, [productId]: size }));
   };
 
-  const handleProceed = (productId) => {
-    const product = wishlist.find((item) => item.id === productId);
-    const size = selectedSizes[productId];
+  const handleMoveToCart = async (product) => {
+    const size = selectedSizes[product.productID];
+    if (!size) {
+      alert("Please select a size");
+      return;
+    }
 
-    if (product && size) {
-      addToCart({ ...product, size });
+    try {
+      await addToCart({ ...product, size });
+      await toggleWishlistItem(product);
+    } catch (error) {
+      console.error('Error moving to cart:', error);
+      alert('Failed to move item to cart');
     }
   };
 
-  const progressionLabels = ["Favorite", "Confirm Order", "Payment", "Delivered"];
-
-  const getProgressPercent = () => {
-    return ((step - 1) / (progressionLabels.length - 1)) * 100;
+  const getImageUrl = (picturePath) => {
+    if (!picturePath) return '/placeholder.jpg';
+    
+    // Clean up the picture path (remove any spaces and convert to lowercase)
+    const cleanPath = picturePath?.toLowerCase().replace(/\s+/g, '-');
+    return `http://localhost:5001/api/v1/images/${cleanPath}`;
   };
+
+  if (loading) return <div className="wishlist-container">Loading...</div>;
+  if (error) return <div className="wishlist-container">Error: {error}</div>;
 
   return (
     <div className="wishlist-container">
-      <h1 className="wishlist-title-main">My Favorites</h1>
-
-      {/* Visual Red Progress Bar */}
-      <div className="status-bar">
-        <div className="status-header">
-          <span className="status-label">Order Progress</span>
-          <span className="status-step">{progressionLabels[step - 1]}</span>
-        </div>
-        <div className="status-line">
-          <div className="status-fill" style={{ width: `${getProgressPercent()}%` }}></div>
-        </div>
-        <div className="status-points">
-          {progressionLabels.map((label, i) => (
-            <div key={i} className="status-point">
-              <span className={step === i + 1 ? "highlight-label" : ""}>{label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Wishlist Grid */}
+      <h1 className="wishlist-title-main">My Wishlist</h1>
+      
       <div className="wishlist-grid">
         {wishlist.length === 0 ? (
-          <p className="empty-message">Your wishlist is empty.</p>
+          <p className="empty-message">Your wishlist is empty</p>
         ) : (
           wishlist.map((item) => (
-            <div className="wishlist-card" key={item.id}>
+            <div className="wishlist-card" key={item.productID}>
               <button
                 className="remove-icon"
                 onClick={() => toggleWishlistItem(item)}
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
-              <img src={item.image} alt={item.name} className="wishlist-img" />
+
+              <img 
+                src={getImageUrl(item.pictures?.[0] || item.picturePath)}
+                alt={item.name} 
+                className="wishlist-img"
+                onError={(e) => {
+                  console.log('Image failed to load:', e.target.src);
+                  e.target.onerror = null; // Prevent infinite loop
+                  e.target.src = '/placeholder.jpg';
+                }}
+              />
+
               <div className="wishlist-details">
-                <h3 className="wishlist-product-name"><strong>{item.name}</strong></h3>
-                <p className="wishlist-price">{item.price.toLocaleString()} TL</p>
+                <h3 className="wishlist-product-name">{item.name}</h3>
+                <p className="wishlist-price">
+                  ${Number(item.discountedPrice || item.unitPrice).toFixed(2)}
+                </p>
 
                 <div className="action-row">
                   <select
-                    id={`size-${item.id}`}
-                    value={selectedSizes[item.id] || ""}
-                    onChange={(e) => handleSizeChange(item.id, e.target.value)}
+                    value={selectedSizes[item.productID] || ""}
+                    onChange={(e) => handleSizeChange(item.productID, e.target.value)}
                   >
-                    <option value="">Body</option>
-                    {["36", "37", "38", "39", "40", "41", "42", "43", "44"].map(
-                      (size) => (
-                        <option key={size} value={size}>
-                          {size}
-                        </option>
-                      )
-                    )}
+                    <option value="">Select Size</option>
+                    {[38, 39, 40, 41, 42, 43, 44].map((size) => (
+                      <option key={size} value={size}>EU {size}</option>
+                    ))}
                   </select>
 
                   <button
                     className="add-to-cart-btn"
-                    onClick={() => handleProceed(item.id)}
-                    disabled={!selectedSizes[item.id]}
+                    onClick={() => handleMoveToCart(item)}
+                    disabled={!selectedSizes[item.productID]}
                   >
-                    Add to Cart
+                    Move to Cart
                   </button>
                 </div>
               </div>

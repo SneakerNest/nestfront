@@ -16,6 +16,7 @@ const ProfilePage = () => {
   const [comment, setComment] = useState("");
   const [showRatingPopup, setShowRatingPopup] = useState(false);
   const [showReviewPopup, setShowReviewPopup] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -26,47 +27,47 @@ const ProfilePage = () => {
           return;
         }
 
-        // Add the token to the request headers
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5001/api/v1/user/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        console.log('Profile data:', response.data);
+        // Get user profile data
+        const profileResponse = await axios.get('/user/profile');
         
-        // Verify the data belongs to the logged-in user
-        if (response.data.user?.username !== user.username) {
-          console.error('Mismatched user data');
-          logout();
-          navigate('/login');
-          return;
-        }
+        // Get both active and past orders
+        const activeOrdersResponse = await axios.get('/order/active');
+        const pastOrdersResponse = await axios.get('/order/past');
+        
+        console.log('Active orders:', activeOrdersResponse.data);
+        console.log('Past orders:', pastOrdersResponse.data);
 
-        setUserData(response.data);
+        setUserData({
+          ...profileResponse.data,
+          activeOrders: activeOrdersResponse.data,
+          pastOrders: pastOrdersResponse.data
+        });
       } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error fetching data:', error);
         setError(error.message);
-        if (error.response?.status === 401) {
-          logout();
-          navigate('/login');
-        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserData();
-  }, [navigate]);
+  }, [navigate, refreshTrigger]);
 
   const handleLogout = async () => {
     try {
       await clearCartOnLogout();
-      await logout();
-      navigate('/login');
+      const logoutSuccess = await logout();
+      
+      if (logoutSuccess) {
+        // Force navigation to login and prevent going back
+        navigate('/login', { replace: true });
+      } else {
+        console.error('Logout failed');
+        alert('There was a problem logging out. Please try again.');
+      }
     } catch (error) {
       console.error('Error during logout:', error);
+      alert('There was a problem logging out. Please try again.');
     }
   };
 
@@ -77,25 +78,26 @@ const ProfilePage = () => {
         return;
       }
 
-      // Changed from /reviews/submit to /store/product/{productID}/reviews
-      await axios.post(`http://localhost:5001/api/v1/store/product/${selectedProduct.productID}/reviews`, {
+      await axios.post('/reviews/rating', {
         productID: selectedProduct.productID,
         customerID: userData.customer.customerID,
-        reviewStars: parseInt(rating),
-        approvalStatus: 1 // Ratings are auto-approved
+        rating: parseInt(rating)
       });
 
       setShowRatingPopup(false);
       setSelectedProduct(null);
       setRating("");
       
-      // Refresh user data to update review status
-      const response = await axios.get('http://localhost:5001/api/v1/user/profile');
-      setUserData(response.data);
-      alert('Rating submitted and updated successfully!');
+      // Refresh orders data
+      const response = await axios.get('/order/past');
+      setUserData(prev => ({
+        ...prev,
+        pastOrders: response.data
+      }));
+
+      alert('Rating submitted successfully!');
     } catch (error) {
       console.error('Error submitting rating:', error);
-      console.log('Error details:', error.response?.data); // Add this for debugging
       alert(error.response?.data?.msg || 'Failed to submit rating');
     }
   };
@@ -107,25 +109,26 @@ const ProfilePage = () => {
         return;
       }
 
-      // Changed endpoint to match the same pattern as ratings
-      await axios.post(`http://localhost:5001/api/v1/store/product/${selectedProduct.productID}/reviews`, {
+      await axios.post('/reviews/review', {
         productID: selectedProduct.productID,
         customerID: userData.customer.customerID,
-        reviewContent: comment.trim(),
-        approvalStatus: 0 // Reviews need approval
+        reviewContent: comment.trim()
       });
 
       setShowReviewPopup(false);
       setSelectedProduct(null);
       setComment("");
       
-      // Refresh user data to update review status
-      const response = await axios.get('http://localhost:5001/api/v1/user/profile');
-      setUserData(response.data);
+      // Refresh orders data
+      const response = await axios.get('/order/past');
+      setUserData(prev => ({
+        ...prev,
+        pastOrders: response.data
+      }));
+
       alert('Review submitted successfully and pending approval!');
     } catch (error) {
       console.error('Error submitting review:', error);
-      console.log('Error details:', error.response?.data); // Add debug logging
       alert(error.response?.data?.msg || 'Failed to submit review');
     }
   };
@@ -134,13 +137,8 @@ const ProfilePage = () => {
   if (error) return <div className="profile-container">Error: {error}</div>;
   if (!userData) return <div className="profile-container">No user data available</div>;
 
-  const activeOrders = userData.orders?.filter(
-    order => ['Processing', 'In Transit'].includes(order.deliveryStatus)
-  ) || [];
-
-  const pastOrders = userData.orders?.filter(
-    order => order.deliveryStatus === 'Delivered'
-  ) || [];
+  const activeOrders = userData?.activeOrders || [];
+  const pastOrders = userData?.pastOrders || [];
 
   return (
     <div className="profile-container">
@@ -192,15 +190,34 @@ const ProfilePage = () => {
                   <h4>Order #{order.orderNumber}</h4>
                   <div className="order-details">
                     <p>Status: {order.deliveryStatus}</p>
+                    <p>Date: {new Date(order.timeOrdered).toLocaleDateString()}</p>
                     <p>Total: ${order.totalPrice}</p>
                     <div className="order-tracker">
                       <div className="tracker-line">
-                        <div className="progress" style={{
-                          width: order.deliveryStatus === 'Processing' ? '33%' :
-                                order.deliveryStatus === 'In Transit' ? '66%' : '100%'
-                        }}></div>
+                        <div 
+                          className="progress" 
+                          data-status={order.deliveryStatus}
+                          style={{
+                            width: order.deliveryStatus === 'Processing' ? '33%' :
+                                   order.deliveryStatus === 'In-transit' ? '66%' : '100%'
+                          }}
+                        />
+                      </div>
+                      <div className="status-points">
+                        <span>Processing</span>
+                        <span>In-transit</span>
+                        <span>Delivered</span>
                       </div>
                     </div>
+                    {order.products && (
+                      <div className="order-products">
+                        {order.products.map(product => (
+                          <div key={product.productID} className="order-product-item">
+                            <p>{product.name} - Quantity: {product.quantity}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

@@ -67,7 +67,8 @@
     padding: 20px;
     border: 1px solid #eee;
     border-radius: 10px;
-    background: #fdfdfd;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
   
   /* Tracker Bar */
@@ -77,19 +78,43 @@
   }
   
   .tracker-line {
-    height: 4px;
+    height: 6px;
     background: #eee;
+    border-radius: 3px;
+    margin: 15px 0;
     position: relative;
-    border-radius: 2px;
-    margin: 20px 0;
+    overflow: hidden;
   }
   
   .progress {
     position: absolute;
+    left: 0;
+    top: 0;
     height: 100%;
-    background: #4CAF50;
-    border-radius: 2px;
+    background: #e60023;
     transition: width 0.3s ease;
+  }
+
+  .order-tracker .progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: #e60023;
+    transition: width 0.3s ease;
+    width: 0;
+  }
+
+  .order-tracker .progress[data-status="Processing"] {
+    width: 33%;
+  }
+
+  .order-tracker .progress[data-status="In-transit"] {
+    width: 66%;
+  }
+
+  .order-tracker .progress[data-status="Delivered"] {
+    width: 100%;
   }
   
   .tracker-line {
@@ -401,4 +426,17 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
+  }
+
+  .order-products {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+  }
+
+  .order-product-item {
+    padding: 8px;
+    margin: 5px 0;
+    background: #f8f9fa;
+    border-radius: 4px;
   }

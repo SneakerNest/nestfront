@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom";
 import App from "./App";
 import { CartProvider } from "./context/CartContext";
-import { WishlistProvider } from "./context/WishlistContext"; // ✅ ✅
+import { WishlistProvider } from "./context/WishlistContext";
 
 import "./styles/Global.css";
 import "./index.css";
@@ -12,12 +12,12 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
-    <CartProvider>
-      <WishlistProvider> {/* ✅ This is crucial */}
-        <Router>
+    <Router>
+      <CartProvider>
+        <WishlistProvider>
           <App />
-        </Router>
-      </WishlistProvider>
-    </CartProvider>
+        </WishlistProvider>
+      </CartProvider>
+    </Router>
   </React.StrictMode>
 );

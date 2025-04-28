@@ -21,6 +21,7 @@ import SlippersSandalsPage from "./components/slippers & sandals";
 import WishlistPage from "./components/WishlistPage";
 import CartPage from "./components/CartPage";
 import CheckoutPage from "./components/CheckoutPage";
+import PaymentPage from "./components/PaymentPage";
 
 import ManagerHome from "./components/ManagerHome";
 import ProductManager from "./components/ProductManager";
@@ -63,7 +64,12 @@ function App() {
           } />
           <Route path="/checkout" element={
             <ProtectedRoute>
-              <CheckoutPage />
+              <PaymentPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/payment" element={
+            <ProtectedRoute>
+              <PaymentPage />
             </ProtectedRoute>
           } />
 

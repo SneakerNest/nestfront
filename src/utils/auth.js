@@ -73,21 +73,29 @@ export const logout = async () => {
   try {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user?.customerID) {
-      // Call the API to handle server-side logout if needed
-      await axios.post('/user/logout', {
-        customerID: user.customerID
-      });
+      try {
+        // Call the API to handle server-side logout if needed
+        await axios.post('/user/logout', {
+          customerID: user.customerID
+        });
+      } catch (error) {
+        console.error('Error during server logout:', error);
+      }
     }
     
-    // Clear user data
+    // Clear all auth-related data
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('isLoggedIn');
     
-    // Force a page refresh to clear all states
-    window.location.reload();
+    // Clear axios default authorization header
+    delete axios.defaults.headers.common['Authorization'];
+    
+    // Instead of reload, return true to indicate successful logout
+    return true;
   } catch (error) {
     console.error('Error during logout:', error);
+    return false;
   }
 };
 
