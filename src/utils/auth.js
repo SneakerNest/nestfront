@@ -1,22 +1,67 @@
 import axios from 'axios';
 import { CartContext } from '../context/CartContext';
 
+// Configure axios defaults
+axios.defaults.baseURL = 'http://localhost:5001/api/v1';
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+axios.defaults.withCredentials = true;
+
+// Add request interceptor
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Add response interceptor
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('isLoggedIn');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const isUserLogged = () => {
   try {
     const user = localStorage.getItem('user');
     if (!user) return null;
-    return JSON.parse(user);
+    
+    const parsedUser = JSON.parse(user);
+    if (parsedUser.role === 'customer' && !parsedUser.customerID) {
+      return null;
+    }
+    
+    return parsedUser;
   } catch (error) {
     console.error('Error parsing user data:', error);
-    localStorage.removeItem('user'); // Clear invalid data
+    localStorage.removeItem('user');
     return null;
   }
 };
 
 export const setLoggedIn = (token, user) => {
-  localStorage.setItem("isLoggedIn", "true");
-  localStorage.setItem("token", token);
-  localStorage.setItem("user", JSON.stringify(user));
+  try {
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
+
+    // Set default Authorization header for all future requests
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } catch (error) {
+    console.error('Error setting login data:', error);
+    throw error;
+  }
 };
 
 export const getUser = () => {
@@ -29,7 +74,7 @@ export const logout = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user?.customerID) {
       // Call the API to handle server-side logout if needed
-      await axios.post('http://localhost:5001/api/v1/user/logout', {
+      await axios.post('/user/logout', {
         customerID: user.customerID
       });
     }
@@ -45,3 +90,5 @@ export const logout = async () => {
     console.error('Error during logout:', error);
   }
 };
+
+export { axios };  // Export configured axios instance

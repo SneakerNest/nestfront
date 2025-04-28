@@ -233,30 +233,36 @@ const ProductView = () => {
       <p>Loading reviews...</p>
     ) : reviews.length > 0 ? (
       <div className="reviews-list">
-        {reviews.map((review, index) => (
-          <div key={review.reviewID || index} className="review-card">
+        {reviews.map((review) => (
+          <div key={review.reviewID} className="review-card">
             <div className="review-header">
               <span className="reviewer-name">
-                {reviewers[review.customerID]} {/* Remove the fallback 'User' since we should always get a username */}
+                {reviewers[review.customerID]}
               </span>
-              <div className="review-rating">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <span key={i} className={`star ${i < review.reviewStars ? "filled" : "empty"}`}>
-                    ★
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="review-content-wrapper">
-              {review.reviewContent && (
-                <p className="review-content">{review.reviewContent}</p>
-              )}
               {review.reviewStars && (
-                <div className="review-stats">
-                  <div className="review-stars">Rating: {review.reviewStars}/5</div>
+                <div className="review-rating">
+                  {[...Array(5)].map((_, i) => (
+                    <span
+                      key={i}
+                      className={`star ${i < review.reviewStars ? "filled" : "empty"}`}
+                    >
+                      ★
+                    </span>
+                  ))}
                 </div>
               )}
             </div>
+            {review.reviewContent && (
+              <div className="review-content-wrapper">
+                <p className="review-content">
+                  {review.approvalStatus === 0 ? (
+                    <span className="pending-review">Review pending approval</span>
+                  ) : (
+                    review.reviewContent
+                  )}
+                </p>
+              </div>
+            )}
           </div>
         ))}
       </div>

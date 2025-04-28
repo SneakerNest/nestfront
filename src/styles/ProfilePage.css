@@ -72,7 +72,24 @@
   
   /* Tracker Bar */
   .order-tracker {
-    margin-top: 10px;
+    margin: 15px 0;
+    position: relative;
+  }
+  
+  .tracker-line {
+    height: 4px;
+    background: #eee;
+    position: relative;
+    border-radius: 2px;
+    margin: 20px 0;
+  }
+  
+  .progress {
+    position: absolute;
+    height: 100%;
+    background: #4CAF50;
+    border-radius: 2px;
+    transition: width 0.3s ease;
   }
   
   .tracker-line {
@@ -137,28 +154,111 @@
   
   /* Review Button */
   .review-btn {
-    margin-top: 10px;
-    background-color: black;
+    padding: 5px 10px;
+    background: #2196F3;
     color: white;
     border: none;
-    padding: 6px 12px;
-    font-size: 14px;
     border-radius: 4px;
     cursor: pointer;
   }
   
   .review-btn:hover {
-    background-color: darkgray;
+    background: #1976D2;
   }
   
   /* Review Popup */
+  .review-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
   .review-popup {
-    background: #fff;
-    border: 1px solid #ddd;
+    background: white;
     padding: 20px;
-    margin-top: 15px;
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 500px;
+  }
+  
+  .rating-select {
+    display: flex;
+    gap: 5px;
+    margin: 15px 0;
+  }
+  
+  .rating-select .star {
+    font-size: 24px;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  
+  .rating-select .star:hover,
+  .rating-select .star.selected {
+    color: #ffd700;
+  }
+  
+  .rating-select:hover .star {
+    color: #ddd;
+  }
+  
+  .rating-select:hover .star:hover ~ .star {
+    color: #ddd;
+  }
+  
+  .rating-select:hover .star:hover,
+  .rating-select:hover .star:hover ~ .star {
+    color: #ffd700;
+  }
+  
+  .star {
+    font-size: 24px;
+    color: #ddd;
+    cursor: pointer;
+    margin-right: 5px;
+  }
+  
+  .star.selected {
+    color: #ffd700;
+  }
+  
+  .review-popup textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .review-popup-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  
+  .review-popup-actions button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .review-popup-actions button:first-child {
+    background: #4CAF50;
+    color: white;
+  }
+  
+  .review-popup-actions button:last-child {
+    background: #f44336;
+    color: white;
   }
   
   .review-popup h4 {
@@ -228,4 +328,77 @@
   
   .review-status.rejected {
     color: red;
+  }
+  
+  .order-product {
+    background: #f8f8f8;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .review-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .rate-btn {
+    padding: 5px 10px;
+    background: #FFA500;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .rate-btn:hover {
+    background: #FF8C00;
+  }
+
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .popup {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+  }
+
+  .popup-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 15px;
+  }
+
+  .popup-actions button:first-child {
+    background: #4CAF50;
+    color: white;
+  }
+
+  .popup-actions button:last-child {
+    background: #f44336;
+    color: white;
+  }
+
+  .popup-actions button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
   }

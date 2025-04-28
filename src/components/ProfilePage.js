@@ -1,319 +1,327 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { isUserLogged, logout } from "../utils/auth";
-import products from "../data/products";
+import { isUserLogged, logout, axios } from "../utils/auth";  // Update this line
 import "../styles/ProfilePage.css";
 import { CartContext } from "../context/CartContext";
 
 const ProfilePage = () => {
-  const { clearCartOnLogout } = useContext(CartContext);
   const navigate = useNavigate();
-  const loggedIn = isUserLogged(); // <- moved outside condition
-  const [reviews, setReviews] = useState([]);
+  const { clearCartOnLogout } = useContext(CartContext);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [selectedProductId, setSelectedProductId] = useState(null);
-  const [rating, setRating] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [rating, setRating] = useState("");
   const [comment, setComment] = useState("");
-  
-  if (!loggedIn) {
-    navigate("/login");
-    return null;
-  }
+  const [showRatingPopup, setShowRatingPopup] = useState(false);
+  const [showReviewPopup, setShowReviewPopup] = useState(false);
 
-  const userInfo = {
-    name: "Tan Berk Doker",
-    username: "tdoker",
-    email: "tdoker@gmail.com",
-    phone: "1234567890",
-    address: {
-      adressTitle: "Home",
-      country: "Turkey",
-      city: "Tuzla",
-      province: "Istanbul",
-      zipCode: "34000",
-      streetAddress: "Orta Mahalle, Üniversite Caddesi",
-    },
-    orders: [
-      {
-        id: "ORD1003",
-        date: "2024-04-18",
-        total: 139.99,
-        items: [
-          { productId: 1, quantity: 1, price: 139.99 },
-        ],
-        status: "processing",
-      },
-      {
-        id: "ORD1002",
-        date: "2024-04-15",
-        total: 219.99,
-        items: [
-          { productId: 2, quantity: 2, price: 109.99 },
-        ],
-        status: "in_transit",
-      },
-      {
-        id: "ORD1001",
-        date: "2024-04-10",
-        total: 129.99,
-        items: [
-          { productId: 3, quantity: 1, price: 129.99 },
-        ],
-        status: "delivered",
-      },
-      {
-        id: "ORD1000",
-        date: "2024-04-10",
-        total: 129.99,
-        items: [
-          { productId: 9, quantity: 1, price: 129.99 },
-          { productId: 10, quantity: 1, price: 129.99 },
-          { productId: 2, quantity: 1, price: 129.99 },
-        ],
-        status: "delivered",
-      },
-    ],
-  };
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = isUserLogged();
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+
+        // Add the token to the request headers
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5001/api/v1/user/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        console.log('Profile data:', response.data);
+        
+        // Verify the data belongs to the logged-in user
+        if (response.data.user?.username !== user.username) {
+          console.error('Mismatched user data');
+          logout();
+          navigate('/login');
+          return;
+        }
+
+        setUserData(response.data);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        setError(error.message);
+        if (error.response?.status === 401) {
+          logout();
+          navigate('/login');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]);
 
   const handleLogout = async () => {
     try {
-      await clearCartOnLogout(); // Clear the cart first
-      logout(); // Then perform logout
+      await clearCartOnLogout();
+      await logout();
       navigate('/login');
     } catch (error) {
       console.error('Error during logout:', error);
     }
   };
 
-  const handleReviewSubmit = () => {
-    if (!selectedOrder || !selectedProductId) return;
-  
-    const trimmedComment = comment.trim();
-  
-    if (!trimmedComment && !rating) {
-      alert("Please provide a comment or a rating.");
-      return;
-    }
-  
-    const newReviews = [];
-  
-    if (rating) {
-      newReviews.push({
-        orderId: selectedOrder.id,
-        productId: selectedProductId,
-        rating,
-        status: "approved"
+  const handleRatingSubmit = async () => {
+    try {
+      if (!rating) {
+        alert('Please select a rating');
+        return;
+      }
+
+      // Changed from /reviews/submit to /store/product/{productID}/reviews
+      await axios.post(`http://localhost:5001/api/v1/store/product/${selectedProduct.productID}/reviews`, {
+        productID: selectedProduct.productID,
+        customerID: userData.customer.customerID,
+        reviewStars: parseInt(rating),
+        approvalStatus: 1 // Ratings are auto-approved
       });
+
+      setShowRatingPopup(false);
+      setSelectedProduct(null);
+      setRating("");
+      
+      // Refresh user data to update review status
+      const response = await axios.get('http://localhost:5001/api/v1/user/profile');
+      setUserData(response.data);
+      alert('Rating submitted and updated successfully!');
+    } catch (error) {
+      console.error('Error submitting rating:', error);
+      console.log('Error details:', error.response?.data); // Add this for debugging
+      alert(error.response?.data?.msg || 'Failed to submit rating');
     }
-  
-    if (trimmedComment) {
-      newReviews.push({
-        orderId: selectedOrder.id,
-        productId: selectedProductId,
-        comment: trimmedComment,
-        status: "pending"
+  };
+
+  const handleReviewSubmit = async () => {
+    try {
+      if (!comment.trim()) {
+        alert('Please write a review');
+        return;
+      }
+
+      // Changed endpoint to match the same pattern as ratings
+      await axios.post(`http://localhost:5001/api/v1/store/product/${selectedProduct.productID}/reviews`, {
+        productID: selectedProduct.productID,
+        customerID: userData.customer.customerID,
+        reviewContent: comment.trim(),
+        approvalStatus: 0 // Reviews need approval
       });
+
+      setShowReviewPopup(false);
+      setSelectedProduct(null);
+      setComment("");
+      
+      // Refresh user data to update review status
+      const response = await axios.get('http://localhost:5001/api/v1/user/profile');
+      setUserData(response.data);
+      alert('Review submitted successfully and pending approval!');
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      console.log('Error details:', error.response?.data); // Add debug logging
+      alert(error.response?.data?.msg || 'Failed to submit review');
     }
-  
-    setReviews((prev) => [...prev, ...newReviews]);
-    setComment("");
-    setRating(null);
-    setSelectedOrder(null);
-    setSelectedProductId(null);
   };
-  
-  const activeOrders = userInfo.orders.filter(
-    (order) => order.status === "processing" || order.status === "in_transit"
-  );
 
-  const pastOrders = userInfo.orders.filter(
-    (order) => order.status === "delivered"
-  );
+  if (loading) return <div className="profile-container">Loading...</div>;
+  if (error) return <div className="profile-container">Error: {error}</div>;
+  if (!userData) return <div className="profile-container">No user data available</div>;
 
-  const renderOrder = (order) => {
-    const progressWidth =
-      order.status === "processing"
-        ? "15%"
-        : order.status === "in_transit"
-        ? "50%"
-        : "100%";
+  const activeOrders = userData.orders?.filter(
+    order => ['Processing', 'In Transit'].includes(order.deliveryStatus)
+  ) || [];
 
-    return (
-      <li key={order.id} className="order-item">
-        <p>
-          <strong>Order #{order.id}</strong> - {order.date} - ${order.total}
-        </p>
-        {order.items.map((item, i) => {
-          const product = products.find((p) => p.id === item.productId);
-          return (
-            <p key={i}>
-              {product?.name || "Unknown"} — Qty: {item.quantity} — Price: $
-              {item.price}
-            </p>
-          );
-        })}
-        <div className="order-tracker">
-          <div className="tracker-line">
-            <div className="tracker-line-fill" style={{ width: progressWidth }}></div>
-            {["processing", "in_transit", "delivered"].map((stage, index) => {
-              const isActive =
-                stage === order.status ||
-                (stage === "in_transit" && order.status === "delivered") ||
-                (stage === "processing" &&
-                  ["in_transit", "delivered"].includes(order.status));
-              return (
-                <div
-                  key={index}
-                  className={`tracker-step ${isActive ? "active" : ""}`}
-                >
-                  <div className="circle"></div>
-                  <span>{stage.replace("_", " ")}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {order.status === "delivered" && (
-          <div className="review-section">
-            <button
-              className="review-btn"
-              onClick={() => {
-                setSelectedOrder(order);
-                setSelectedProductId(order.items[0].productId);
-              }}
-            >
-              + Add Review
-            </button>
-          {selectedOrder?.id === order.id && (
-            <div className="review-popup">
-              <h4>Leave a review for Order #{selectedOrder.id}</h4>
-              <select
-                value={selectedProductId}
-                onChange={(e) => setSelectedProductId(parseInt(e.target.value))}
-              >
-                {selectedOrder.items.map((item) => {
-                  const product = products.find((p) => p.id === item.productId);
-                  return (
-                    <option key={item.productId} value={item.productId}>
-                      {product?.name}
-                    </option>
-                  );
-                })}
-              </select>
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Write your review here..."
-              />
-              <div>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span
-                    key={star}
-                    style={{
-                      cursor: "pointer",
-                      color: rating >= star ? "#ffc107" : "#ddd",
-                      fontSize: "20px",
-                    }}
-                    onClick={() => setRating(star)}
-                  >
-                    ★
-                  </span>
-                ))}
-              </div>
-              <button onClick={handleReviewSubmit}>Submit Review</button>
-            </div>
-          )}
-            {reviews
-              .filter((review) => review.orderId === order.id)
-              .map((review, idx) => {
-                const product = products.find(p => p.id === review.productId);
-                return (
-                  <div key={idx} className="order-review">
-                    <p>
-                      <strong>{product?.name || "Unknown Product"}</strong>
-                    </p>
-                    {review.rating && (
-                      <p className="review-rating">
-                        {"★".repeat(review.rating)}
-                        {"☆".repeat(5 - review.rating)}
-                      </p>
-                    )}
-                    {review.comment && (
-                      <p className="review-comment">"{review.comment}"</p>
-                    )}
-                    <span className={`review-status ${review.status}`}>
-                      {review.status === "pending" && "Pending Approval"}
-                      {review.status === "approved" && "Approved"}
-                      {review.status === "rejected" && "Rejected"}
-                    </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </li>
-    );
-  };
+  const pastOrders = userData.orders?.filter(
+    order => order.deliveryStatus === 'Delivered'
+  ) || [];
 
   return (
     <div className="profile-container">
       <div className="profile-box">
         <h1>👤 My Profile</h1>
-  
+
         <div className="profile-section">
           <h3>Name:</h3>
-          <p>{userInfo.name}</p>
+          <p>{userData.user?.name || 'Not provided'}</p>
         </div>
+
         <div className="profile-section">
           <h3>Username:</h3>
-          <p>{userInfo.username}</p>
+          <p>{userData.user?.username || 'Not provided'}</p>
         </div>
+
         <div className="profile-section">
           <h3>Email:</h3>
-          <p>{userInfo.email}</p>
+          <p>{userData.user?.email || 'Not provided'}</p>
         </div>
+
         <div className="profile-section">
           <h3>Phone:</h3>
-          <p>{userInfo.phone}</p>
+          <p>{userData.customer?.phone || 'Not provided'}</p>
         </div>
-  
-        <div className="profile-section">
-          <h3>Address Info:</h3>
-          <p>{userInfo.address.adressTitle}</p>
-          <p>
-            {userInfo.address.streetAddress}, {userInfo.address.city},{" "}
-            {userInfo.address.province}, {userInfo.address.zipCode}
-          </p>
-          <p>{userInfo.address.country}</p>
-        </div>
-  
+
+        {userData.address && (
+          <div className="profile-section">
+            <h3>Address Info:</h3>
+            <p>{userData.address.addressTitle || 'No title'}</p>
+            <p>
+              {[
+                userData.address.streetAddress,
+                userData.address.city,
+                userData.address.province,
+                userData.address.zipCode
+              ].filter(Boolean).join(', ')}
+            </p>
+            <p>{userData.address.country}</p>
+          </div>
+        )}
+
         <div className="profile-section">
           <h3>Active Orders</h3>
-          <ul className="order-list">
-            {activeOrders.length > 0 ? (
-              activeOrders.map(renderOrder)
-            ) : (
-              <p>No active orders.</p>
-            )}
-          </ul>
+          {activeOrders.length > 0 ? (
+            <div className="orders-list">
+              {activeOrders.map((order) => (
+                <div key={order.orderID} className="order-item">
+                  <h4>Order #{order.orderNumber}</h4>
+                  <div className="order-details">
+                    <p>Status: {order.deliveryStatus}</p>
+                    <p>Total: ${order.totalPrice}</p>
+                    <div className="order-tracker">
+                      <div className="tracker-line">
+                        <div className="progress" style={{
+                          width: order.deliveryStatus === 'Processing' ? '33%' :
+                                order.deliveryStatus === 'In Transit' ? '66%' : '100%'
+                        }}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="no-orders-message">No active orders</p>
+          )}
         </div>
-  
+
         <div className="profile-section">
           <h3>Past Orders</h3>
-          <ul className="order-list">
-            {pastOrders.length > 0 ? (
-              pastOrders.map(renderOrder)
-            ) : (
-              <p>No past orders.</p>
-            )}
-          </ul>
+          {pastOrders.length > 0 ? (
+            <div className="orders-list">
+              {pastOrders.map((order) => (
+                <div key={order.orderID} className="order-item">
+                  <h4>Order #{order.orderNumber}</h4>
+                  <div className="order-details">
+                    <p>Date: {new Date(order.timeOrdered).toLocaleDateString()}</p>
+                    <p>Total: ${order.totalPrice}</p>
+                    {order.products?.map((product) => (
+                      <div key={product.productID} className="order-product">
+                        <p>{product.name} - Quantity: {product.quantity}</p>
+                        <div className="review-actions">
+                          {!product.rated && (
+                            <button 
+                              className="rate-btn"
+                              onClick={() => {
+                                setSelectedProduct(product);
+                                setShowRatingPopup(true);
+                              }}
+                            >
+                              Rate Product
+                            </button>
+                          )}
+                          {!product.reviewed && (
+                            <button 
+                              className="review-btn"
+                              onClick={() => {
+                                setSelectedProduct(product);
+                                setShowReviewPopup(true);
+                              }}
+                            >
+                              Write Review
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="no-orders-message">No past orders</p>
+          )}
         </div>
+
         <button className="logout-btn" onClick={handleLogout}>
           Log Out
         </button>
       </div>
+
+      {/* Rating Popup */}
+      {showRatingPopup && (
+        <div className="popup-overlay">
+          <div className="popup">
+            <h4>Rate Product</h4>
+            <p>{selectedProduct?.name}</p>
+            
+            <div className="rating-select">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span
+                  key={star}
+                  onClick={() => setRating(star)}
+                  onMouseEnter={() => setRating(star)}
+                  className={`star ${rating >= star ? 'selected' : ''}`}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+
+            <div className="popup-actions">
+              <button onClick={handleRatingSubmit}>Submit Rating</button>
+              <button onClick={() => {
+                setShowRatingPopup(false);
+                setSelectedProduct(null);
+                setRating("");
+              }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Review Popup */}
+      {showReviewPopup && (
+        <div className="popup-overlay">
+          <div className="popup">
+            <h4>Write Review</h4>
+            <p>{selectedProduct?.name}</p>
+
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Write your review here..."
+              rows={4}
+            />
+
+            <div className="popup-actions">
+              <button onClick={handleReviewSubmit}>Submit Review</button>
+              <button onClick={() => {
+                setShowReviewPopup(false);
+                setSelectedProduct(null);
+                setComment("");
+              }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
 export default ProfilePage;
