@@ -16,44 +16,45 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Login request
-      const response = await axios.post('http://localhost:5001/api/v1/user/login', {
+      const response = await axios.post('/user/login', {
         username,
         password
       });
 
       if (response.data.token && response.data.user) {
-        // Get customerID if user is a customer
-        if (response.data.user.role === 'customer') {
-          try {
-            const customerResponse = await axios.get(
-              `http://localhost:5001/api/v1/user/customer/${response.data.user.username}`
-            );
-            
-            // Add customerID to user data
-            const userData = {
-              ...response.data.user,
-              customerID: customerResponse.data.customerID
-            };
-
-            // Store complete user data
-            await setLoggedIn(response.data.token, userData);
-
-            // Merge carts using the customerID
-            await mergeCartsOnLogin(customerResponse.data.customerID);
-            navigate('/shop');
-          } catch (error) {
-            console.error('Error getting customer data:', error);
-            setError('Error getting customer data');
-          }
-        } else {
-          // For non-customer roles, just store the data and navigate
-          await setLoggedIn(response.data.token, response.data.user);
-          if (response.data.user.role === 'productManager') {
-            navigate('/productmanager');
-          } else if (response.data.user.role === 'salesManager') {
+        await setLoggedIn(response.data.token, response.data.user);
+        
+        // Redirect based on user role
+        switch (response.data.user.role) {
+          case 'productManager':
+            navigate('/productmanager'); // Changed from '/manager'
+            break;
+          case 'salesManager':
             navigate('/salesmanager');
-          }
+            break;
+          case 'customer':
+            // Handle customer login
+            try {
+              const customerResponse = await axios.get(
+                `/user/customer/${response.data.user.username}`
+              );
+              
+              const userData = {
+                ...response.data.user,
+                customerID: customerResponse.data.customerID
+              };
+
+              await setLoggedIn(response.data.token, userData);
+              await mergeCartsOnLogin(customerResponse.data.customerID);
+              navigate('/shop');
+            } catch (error) {
+              console.error('Error getting customer data:', error);
+              setError('Error getting customer data');
+            }
+            break;
+          default:
+            setError('Invalid user role');
+            break;
         }
       }
     } catch (error) {

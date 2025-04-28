@@ -57,6 +57,11 @@ function App() {
               <ManagerHome />
             </ProtectedRoute>
           } />
+          <Route path="/manager/products" element={
+            <ProtectedRoute roles={['productManager']}>
+              <ProductManager />
+            </ProtectedRoute>
+          } />
           <Route path="/salesmanager" element={
             <ProtectedRoute roles={['salesManager']}>
               <SalesManagerMenu />
@@ -72,6 +77,16 @@ function App() {
               <PaymentPage />
             </ProtectedRoute>
           } />
+
+          {/* Protected Product Manager Routes */}
+          <Route 
+            path="/productmanager/*" 
+            element={
+              <ProtectedRoute roles={['productManager']}>
+                <ProductManager />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Product routes */}
           <Route path="/product/:id" element={<ProductView />} />
