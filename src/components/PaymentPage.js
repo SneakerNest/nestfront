@@ -134,6 +134,13 @@ const PaymentPage = () => {
         ...orderDetailsResponse.data,
         userEmail: userEmail
       };
+
+      console.log('Order details with delivery address:', {
+        orderID: orderID,
+        hasDeliveryAddress: !!orderDetailsResponse.data.deliveryAddress,
+        addressInfo: orderDetailsResponse.data.deliveryAddress
+      });
+
       setOrderDetails(completeOrderDetails);
 
       // Send invoice via email
@@ -183,6 +190,56 @@ const PaymentPage = () => {
 
               <div className="brand-section">
                 <h1>SneakerNest</h1>
+              </div>
+
+              {/* Add Delivery Address Section */}
+              <div className="delivery-address-section">
+                <h3>Delivery Address</h3>
+                <div className="address-details">
+                  {orderDetails.deliveryAddress ? (
+                    <>
+                      <p>{orderDetails.deliveryAddress.addressTitle || 'Shipping Address'}</p>
+                      <p>{orderDetails.deliveryAddress.streetAddress}</p>
+                      <p>
+                        {[
+                          orderDetails.deliveryAddress.city,
+                          orderDetails.deliveryAddress.province,
+                          orderDetails.deliveryAddress.zipCode
+                        ].filter(Boolean).join(', ')}
+                      </p>
+                      <p>{orderDetails.deliveryAddress.country}</p>
+                    </>
+                  ) : (
+                    // Try to get profile address as fallback
+                    <div className="address-fallback">
+                      <p>Using your default address:</p>
+                      {async () => {
+                        try {
+                          const profileData = await axios.get('/user/profile');
+                          if (profileData.data.customer) {
+                            return (
+                              <>
+                                <p>{profileData.data.customer.addressTitle || 'Default Address'}</p>
+                                <p>{profileData.data.customer.streetAddress}</p>
+                                <p>
+                                  {[
+                                    profileData.data.customer.city,
+                                    profileData.data.customer.province,
+                                    profileData.data.customer.zipCode
+                                  ].filter(Boolean).join(', ')}
+                                </p>
+                                <p>{profileData.data.customer.country}</p>
+                              </>
+                            );
+                          }
+                          return <p>No address information available</p>;
+                        } catch (err) {
+                          return <p>No address information available</p>;
+                        }
+                      }}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="invoice-items">

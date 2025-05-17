@@ -709,6 +709,27 @@ invoice-details h3 {
   text-transform: uppercase;
 }
 
+.delivery-address-section {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  border-left: 4px solid #4CAF50;
+}
+
+.delivery-address-section h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #4CAF50;
+  font-size: 1.2em;
+}
+
+.address-details p {
+  margin: 3px 0;
+  font-size: 14px;
+  color: #555;
+}
+
 @media (max-width: 992px) {
   .payment-content {
     grid-template-columns: 1fr;
