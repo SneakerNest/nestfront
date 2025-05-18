@@ -37,6 +37,7 @@ const ProductManager = () => {
     description: ""
   });
   const [pendingProducts, setPendingProducts] = useState([]);
+  const [deliveryData, setDeliveryData] = useState([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -50,25 +51,28 @@ const ProductManager = () => {
   });
 
   useEffect(() => {
-    const fetchAllData = async () => {
+    const loadData = async () => {
       setIsLoading(true);
       try {
-        await Promise.all([
-          fetchProducts(),
-          fetchOrders(),
-          fetchPendingReviews(),
-          fetchCategories(),
-          fetchPendingProducts()
-        ]);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError("Failed to load dashboard data");
+        await fetchCategories();
+        await fetchProducts();
+        await fetchOrders();
+        await fetchPendingReviews();
+        
+        // Call this separately and log the result
+        console.log("About to fetch pending products...");
+        await fetchPendingProducts();
+        console.log("Finished fetching pending products");
+
+        await fetchDeliveryData();
+      } catch (error) {
+        setError("Failed to load data");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchAllData();
+    loadData();
   }, []);
 
   const fetchProducts = async () => {
@@ -159,10 +163,78 @@ const ProductManager = () => {
 
   const fetchPendingProducts = async () => {
     try {
-      const response = await axios.get('/store/products/pending');
-      setPendingProducts(response.data);
+      console.log('Fetching pending products using debug route...');
+      
+      // Use the debug endpoint that works
+      const response = await axios.get('/store/debug/pending-products');
+      console.log('Debug pending products response:', response);
+      
+      if (response.data && response.data.rawData) {
+        // Extract the rawData from the debug response
+        const pendingData = response.data.rawData;
+        console.log(`Found ${pendingData.length} pending products from debug endpoint`);
+        
+        // Process products with CORRECT image paths and actual categories
+        const processedProducts = await Promise.all(pendingData.map(async (product) => {
+          try {
+            // 1. Get the actual category for each product
+            const categoryResponse = await axios.get(`/store/product/${product.productID}/category`);
+            const categoryName = categoryResponse.data.categoryName || 'Uncategorized';
+            console.log(`Category for product ${product.productID}: ${categoryName}`);
+            
+            // 2. Format image name exactly like f50.jpg - all lowercase with underscores
+            const imageFileName = product.name.replace(/\s+/g, '_').toLowerCase();
+            
+            // 3. IMPORTANT: Use the FULL correct URL path that matches your API
+            // Must match the same pattern used in formatProductsWithCategory
+            const imageUrl = `http://localhost:5001/api/v1/images/${imageFileName}`;
+            
+            console.log(`Image URL for ${product.name}: ${imageUrl}`);
+            
+            return {
+              ...product,
+              pictures: [imageFileName],
+              imageUrl: imageUrl,
+              categoryName: categoryName
+            };
+          } catch (err) {
+            console.warn(`Error getting details for product ${product.productID}:`, err);
+            return {
+              ...product,
+              pictures: [],
+              imageUrl: '/placeholder.jpg',
+              categoryName: 'Unknown Category'
+            };
+          }
+        }));
+        
+        setPendingProducts(processedProducts);
+        console.log('Processed pending products with actual categories:', processedProducts);
+      } else {
+        console.warn('Unexpected debug response format:', response.data);
+        setPendingProducts([]);
+      }
     } catch (err) {
-      console.error("Error fetching pending products:", err);
+      console.error('Error fetching pending products from debug endpoint:', err);
+      
+      if (err.response) {
+        console.error('Error status:', err.response.status);
+        console.error('Error data:', err.response.data);
+      }
+      
+      setPendingProducts([]);
+    }
+  };
+
+  const fetchDeliveryData = async () => {
+    try {
+      console.log('Fetching delivery data...');
+      const response = await axios.get('/delivery/all');
+      console.log('Delivery data response:', response.data);
+      setDeliveryData(response.data);
+    } catch (err) {
+      console.error("Error fetching delivery data:", err);
+      setDeliveryData([]);
     }
   };
 
@@ -236,48 +308,37 @@ const ProductManager = () => {
 
   const handleAddProduct = async () => {
     try {
-      if (!formData.name || !formData.category || !formData.stock) {
-        alert('Please fill in all required fields');
-        return;
-      }
+      // Create a simple object with ALL required database fields
+      const productData = {
+        name: formData.name || '',
+        categoryID: formData.category || '',
+        description: formData.description || '',
+        stock: formData.stock || 0,
+        
+        // Required database fields with defaults
+        brand: formData.newSubcategory || formData.subcategory || 'Generic',
+        supplierID: 1,
+        material: 'Leather',
+        warrantyMonths: 6,
+        serialNumber: `SN-FB-${Math.floor(Math.random() * 10000)}`,
+        popularity: 0,
+        overallRating: 0,
+        unitPrice: 0,
+        discountPercentage: 0,
+        color: 'Default',
+        showProduct: false,  // This is important! Set to false initially
+        status: 'pending'    // Add status field as pending
+      };
       
-      const formDataForAPI = new FormData();
-      formDataForAPI.append('name', formData.name);
-      formDataForAPI.append('categoryID', formData.category);
-      formDataForAPI.append('description', formData.description || '');
-      formDataForAPI.append('stock', formData.stock);
+      console.log("Sending product data:", productData);
       
-      // For subcategory, use either selected or new subcategory
-      if (formData.subcategory) {
-        formDataForAPI.append('subcategory', formData.subcategory);
-      } else if (formData.newSubcategory) {
-        formDataForAPI.append('subcategory', formData.newSubcategory);
-      }
+      // Convert form data to JSON request
+      const response = await axios.post('/store/products/pending', productData);
       
-      // Special handling for football products
-      if (formData.name.toLowerCase().includes('football')) {
-        // Use football.jpg for football products if no image selected
-        if (!formData.image) {
-          // Create a file object from football.jpg
-          const response = await fetch('/assets/football.jpg');
-          const blob = await response.blob();
-          const file = new File([blob], 'football.jpg', { type: 'image/jpeg' });
-          formDataForAPI.append('image', file);
-        } else {
-          formDataForAPI.append('image', formData.image);
-        }
-      } else if (formData.image) {
-        formDataForAPI.append('image', formData.image);
-      }
-      
-      // Submit the product
-      const response = await axios.post('/store/products/pending', formDataForAPI, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      
+      console.log('Product added successfully:', response.data);
       alert('Product added successfully! Waiting for price approval.');
+      
+      // Reset form and refresh data
       setShowAddForm(false);
       setFormData({
         name: "",
@@ -289,12 +350,11 @@ const ProductManager = () => {
         image: null
       });
       
-      // Refresh product list
+      // Refresh the pending products list
       fetchPendingProducts();
-      
     } catch (err) {
-      console.error('Error adding product:', err);
-      alert('Failed to add product. Please try again.');
+      console.error('Error details:', err);
+      alert(`Failed to add product: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -304,9 +364,21 @@ const ProductManager = () => {
         return;
       }
       
-      await axios.delete(`/store/products/${productId}`);
+      // Check if the product is in pendingProducts (meaning it's a pending product)
+      const isPending = pendingProducts.some(p => p.productID === productId);
       
-      setStock(stock.filter(product => product.productID !== productId));
+      if (isPending) {
+        // Use the special debug endpoint for pending products
+        await axios.delete(`/store/debug/pending-products/${productId}`);
+      } else {
+        // Use the regular endpoint for normal products
+        await axios.delete(`/store/products/${productId}`);
+      }
+      
+      // Update both stock and pendingProducts states
+      setStock(prevStock => prevStock.filter(product => product.productID !== productId));
+      setPendingProducts(prevPending => prevPending.filter(product => product.productID !== productId));
+      
       alert('Product deleted successfully!');
     } catch (err) {
       console.error("Error deleting product:", err);
@@ -374,9 +446,36 @@ const ProductManager = () => {
       <h1 className="h1">Product Manager Dashboard</h1>
 
       <div className="tab-buttons">
-        <button onClick={() => setActiveTab("stock")}>Stock Manager</button>
-        <button onClick={() => setActiveTab("orderStatus")}>Order Status</button>
-        <button onClick={() => setActiveTab("comments")}>Comment Approval</button>
+        <button 
+          onClick={() => setActiveTab("stock")}
+          className={activeTab === "stock" ? "active" : ""}
+        >
+          Stock Manager
+        </button>
+        <button 
+          onClick={() => setActiveTab("pendingProducts")}
+          className={activeTab === "pendingProducts" ? "active" : ""}
+        >
+          Pending Products
+        </button>
+        <button 
+          onClick={() => setActiveTab("orders")}
+          className={activeTab === "orders" ? "active" : ""}
+        >
+          Order Status
+        </button>
+        <button 
+          onClick={() => setActiveTab("reviews")}
+          className={activeTab === "reviews" ? "active" : ""}
+        >
+          Review Approval
+        </button>
+        <button 
+          onClick={() => setActiveTab("deliveries")}
+          className={activeTab === "deliveries" ? "active" : ""}
+        >
+          Delivery Tracking
+        </button>
       </div>
 
       {activeTab === "stock" && (
@@ -498,7 +597,89 @@ const ProductManager = () => {
         </div>
       )}
 
-      {activeTab === "orderStatus" && (
+      {activeTab === "pendingProducts" && (
+        <div className="pending-products-section">
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            marginBottom: '10px' 
+          }}>
+            <h3>Pending Products (Awaiting Price)</h3>
+            <button
+              onClick={() => fetchPendingProducts()}
+              style={{
+                padding: '5px 10px',
+                background: '#2196F3',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              🔄 Refresh Pending
+            </button>
+          </div>
+          
+          <div style={{marginBottom: '10px', fontSize: '13px', color: '#666'}}>
+            {pendingProducts.length > 0 ? 
+              `Found ${pendingProducts.length} pending products` : 
+              'No pending products found'}
+          </div>
+          
+          {pendingProducts.length === 0 ? (
+            <div className="no-pending-products">No pending products found</div>
+          ) : (
+            <table className="stock-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Stock</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingProducts.map(product => (
+                  <tr key={product.productID}>
+                    <td>{product.productID}</td>
+                    <td>
+                      <img
+                        src={product.imageUrl || '/placeholder.jpg'}
+                        alt={product.name}
+                        className="product-thumbnail"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '/placeholder.jpg';
+                        }}
+                      />
+                    </td>
+                    <td>{product.name}</td>
+                    <td>{product.categoryName || 'Unknown'}</td>
+                    <td>{product.stock}</td>
+                    <td>
+                      <span className="pending-badge">Pending Price</span>
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => handleDeleteProduct(product.productID)}
+                        className="delete-btn"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      {activeTab === "orders" && (
         <div className="orders-section">
           <table>
             <thead>
@@ -533,7 +714,7 @@ const ProductManager = () => {
         </div>
       )}
 
-      {activeTab === "comments" && (
+      {activeTab === "reviews" && (
         <div className="reviews-section">
           {error ? (
             <div className="error-message">{error}</div>
@@ -577,6 +758,95 @@ const ProductManager = () => {
                 )}
               </tbody>
             </table>
+          )}
+        </div>
+      )}
+
+      {activeTab === "deliveries" && (
+        <div className="deliveries-section">
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            marginBottom: '10px' 
+          }}>
+            <h3>All Deliveries</h3>
+            <button
+              onClick={() => fetchDeliveryData()}
+              style={{
+                padding: '5px 10px',
+                background: '#2196F3',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              🔄 Refresh Deliveries
+            </button>
+          </div>
+          
+          {deliveryData.length === 0 ? (
+            <div className="no-deliveries">No delivery data found</div>
+          ) : (
+            <div className="table-container">
+              <table className="delivery-table">
+                <thead>
+                  <tr>
+                    <th>Order #</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Products</th>
+                    <th>Total Price</th>
+                    <th>Delivery Address</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {deliveryData.map(order => (
+                    <tr key={order.orderID} className={`status-${order.deliveryStatus?.toLowerCase() || 'unknown'}-row`}>
+                      <td>{order.orderNumber}</td>
+                      <td>{order.orderDate}</td>
+                      <td>
+                        <div className="customer-info">
+                          <strong>{order.customerName}</strong>
+                          <div className="customer-details">
+                            <span>ID: {order.customerID}</span>
+                            <span>User: {order.username}</span>
+                            <span>{order.customerEmail}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <ul className="product-list">
+                          {order.products?.map(product => (
+                            <li key={`${order.orderID}-${product.productID}`}>
+                              {product.name} x {product.quantity} (${Number(product.purchasePrice).toFixed(2)})
+                            </li>
+                          ))}
+                        </ul>
+                      </td>
+                      <td>${Number(order.totalPrice).toFixed(2)}</td>
+                      <td>
+                        {order.deliveryAddress ? (
+                          <div className="address-info">
+                            <p><strong>{order.deliveryAddress.addressTitle}</strong></p>
+                            <p>{order.deliveryAddress.streetAddress}</p>
+                            <p>{order.deliveryAddress.city}, {order.deliveryAddress.province} {order.deliveryAddress.zipCode}</p>
+                            <p>{order.deliveryAddress.country}</p>
+                          </div>
+                        ) : (
+                          "No address information"
+                        )}
+                      </td>
+                      <td className={`status-${order.deliveryStatus?.toLowerCase() || 'unknown'}`}>
+                        {order.deliveryStatus || 'Unknown'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
