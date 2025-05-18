@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ProductList from './SalesList';
 import ProfitLossChart from './ProfitLossChart';
 import '../styles/SalesManagerMenu.css';
+import InvoiceViewer from './InvoiceViewer';
 
 const SalesManagerMenu = () => {
     const [activeTab, setActiveTab] = useState('chart');
@@ -23,10 +24,18 @@ const SalesManagerMenu = () => {
                 >
                     Manage Prices
                 </button>
+                <button
+                    className={activeTab === 'invoices' ? 'active' : ''}
+                    onClick={() => setActiveTab('invoices')}
+                    >
+                    View Invoices
+                </button>
+
             </div>
             <div className='tab-content'>
                 {activeTab === 'chart' && <ProfitLossChart />}
                 {activeTab === 'products' && <ProductList />}
+                {activeTab === 'invoices' && <InvoiceViewer />}
             </div>
         </div>
     );
