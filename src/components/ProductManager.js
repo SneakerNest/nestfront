@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/ProductManager.css";
+import InvoiceViewer from './InvoiceViewer';
 
 const categories = [
   {
@@ -342,6 +343,7 @@ const ProductManager = () => {
         <button onClick={() => setActiveTab("stock")}>Stock Manager</button>
         <button onClick={() => setActiveTab("orderStatus")}>Order Status</button>
         <button onClick={() => setActiveTab("comments")}>Comment Approval</button>
+        <button onClick={() => setActiveTab("invoices")}>Invoices</button>
       </div>
 
       {activeTab === "stock" && (
@@ -527,6 +529,13 @@ const ProductManager = () => {
           )}
         </div>
       )}
+
+      {activeTab === "invoices" && (
+        <div className="invoice-section">
+          <InvoiceViewer />
+        </div>
+      )}
+
 
       {showAddForm && (
         <div className="modal-overlay">
