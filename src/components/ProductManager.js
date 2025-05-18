@@ -34,8 +34,7 @@ const ProductManager = () => {
   const [showAddCategoryForm, setShowAddCategoryForm] = useState(false);
   const [newCategoryData, setNewCategoryData] = useState({
     name: "",
-    description: "",
-    image: null
+    description: ""
   });
   const [pendingProducts, setPendingProducts] = useState([]);
 
@@ -128,10 +127,33 @@ const ProductManager = () => {
 
   const fetchCategories = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.get('/store/categories');
-      setCategories(response.data);
+      
+      // Properly structure categories with subcategories
+      const mainCategories = response.data.filter(cat => !cat.parentCategoryID);
+      
+      // Enhance categories with subcategories
+      const enhancedCategories = mainCategories.map(mainCat => {
+        // Find all subcategories for this main category
+        const subs = response.data.filter(
+          sub => sub.parentCategoryID === mainCat.categoryID
+        ).map(sub => sub.name);
+        
+        return {
+          ...mainCat,
+          subcategories: subs
+        };
+      });
+      
+      console.log('Categories with subcategories:', enhancedCategories);
+      setCategories(enhancedCategories);
+      setError(null);
     } catch (err) {
-      console.error("Error fetching categories:", err);
+      console.error('Error fetching categories:', err);
+      setError('Failed to load categories. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -215,50 +237,63 @@ const ProductManager = () => {
   const handleAddProduct = async () => {
     try {
       if (!formData.name || !formData.category || !formData.stock) {
-        alert('Please fill in all required fields: name, category, and stock');
+        alert('Please fill in all required fields');
         return;
       }
-
-      // Check if we have a subcategory (either selected or new)
-      const finalSubcategory = formData.newSubcategory || formData.subcategory || "";
       
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('categoryID', formData.category);
-      formDataToSend.append('subcategory', finalSubcategory);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('stock', formData.stock);
-      formDataToSend.append('status', 'pending'); // Always set as pending
+      const formDataForAPI = new FormData();
+      formDataForAPI.append('name', formData.name);
+      formDataForAPI.append('categoryID', formData.category);
+      formDataForAPI.append('description', formData.description || '');
+      formDataForAPI.append('stock', formData.stock);
       
-      if (formData.image) {
-        formDataToSend.append('image', formData.image);
+      // For subcategory, use either selected or new subcategory
+      if (formData.subcategory) {
+        formDataForAPI.append('subcategory', formData.subcategory);
+      } else if (formData.newSubcategory) {
+        formDataForAPI.append('subcategory', formData.newSubcategory);
       }
-
-      // Submit to pending endpoint
-      await axios.post('/store/products/pending', formDataToSend, {
+      
+      // Special handling for football products
+      if (formData.name.toLowerCase().includes('football')) {
+        // Use football.jpg for football products if no image selected
+        if (!formData.image) {
+          // Create a file object from football.jpg
+          const response = await fetch('/assets/football.jpg');
+          const blob = await response.blob();
+          const file = new File([blob], 'football.jpg', { type: 'image/jpeg' });
+          formDataForAPI.append('image', file);
+        } else {
+          formDataForAPI.append('image', formData.image);
+        }
+      } else if (formData.image) {
+        formDataForAPI.append('image', formData.image);
+      }
+      
+      // Submit the product
+      const response = await axios.post('/store/products/pending', formDataForAPI, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      // Reset form
-      setShowAddForm(false);
-      setFormData({ 
-        name: "", 
-        category: "", 
-        subcategory: "", 
-        newSubcategory: "",
-        description: "", 
-        stock: "", 
-        image: null, 
-        status: "pending" 
+          'Content-Type': 'multipart/form-data'
+        }
       });
       
-      // Refresh pending products
+      alert('Product added successfully! Waiting for price approval.');
+      setShowAddForm(false);
+      setFormData({
+        name: "",
+        category: "",
+        subcategory: "",
+        newSubcategory: "",
+        description: "",
+        stock: "",
+        image: null
+      });
+      
+      // Refresh product list
       fetchPendingProducts();
-      alert('Product submitted for approval!');
+      
     } catch (err) {
-      console.error("Error adding product:", err);
+      console.error('Error adding product:', err);
       alert('Failed to add product. Please try again.');
     }
   };
@@ -286,22 +321,13 @@ const ProductManager = () => {
         return;
       }
       
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', newCategoryData.name);
-      formDataToSend.append('description', newCategoryData.description);
-      
-      if (newCategoryData.image) {
-        formDataToSend.append('image', newCategoryData.image);
-      }
-
-      const response = await axios.post('/store/categories', formDataToSend, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const response = await axios.post('/store/categories', {
+        name: newCategoryData.name,
+        description: newCategoryData.description
       });
       
       setCategories([...categories, response.data]);
-      setNewCategoryData({ name: "", description: "", image: null });
+      setNewCategoryData({ name: "", description: "" });
       setShowAddCategoryForm(false);
       alert('Category added successfully!');
     } catch (err) {
@@ -331,6 +357,15 @@ const ProductManager = () => {
     return category?.subcategories || [];
   };
 
+  const handleCategoryChange = (e) => {
+    const categoryId = e.target.value;
+    setFormData({
+      ...formData,
+      category: categoryId,
+      subcategory: '' // Reset subcategory when category changes
+    });
+  };
+
   if (isLoading) return <div className="loading-spinner">Loading dashboard...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
@@ -347,7 +382,25 @@ const ProductManager = () => {
       {activeTab === "stock" && (
         <div className="stock-section">
           <div className="category-management">
-            <h3>Category Management</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <h3>Category Management</h3>
+              <button 
+                onClick={() => {
+                  console.log('Manual refresh of categories');
+                  fetchCategories();
+                }}
+                style={{ 
+                  padding: '5px 10px', 
+                  background: '#2196F3', 
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer' 
+                }}
+              >
+                🔄 Refresh Categories
+              </button>
+            </div>
             <button onClick={() => setShowAddCategoryForm(true)} className="add-product-btn">
               + Add Category
             </button>
@@ -357,35 +410,35 @@ const ProductManager = () => {
                 <thead>
                   <tr>
                     <th>ID</th>
-                    <th>Image</th>
                     <th>Category Name</th>
                     <th>Description</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {categories.map(category => (
-                    <tr key={category.categoryID}>
-                      <td>{category.categoryID}</td>
-                      <td>
-                        <img
-                          src={category.image ? `http://localhost:5001/api/v1/images/${category.image}` : '/placeholder-category.jpg'}
-                          alt={category.name}
-                          className="category-thumbnail"
-                        />
-                      </td>
-                      <td>{category.name}</td>
-                      <td>{category.description || 'No description'}</td>
-                      <td>
-                        <button 
-                          onClick={() => handleDeleteCategory(category.categoryID)}
-                          className="delete-btn"
-                        >
-                          Delete
-                        </button>
+                  {categories && categories.length > 0 ? (
+                    categories.map(category => (
+                      <tr key={category.categoryID}>
+                        <td>{category.categoryID}</td>
+                        <td>{category.name}</td>
+                        <td>{category.description || 'No description'}</td>
+                        <td>
+                          <button 
+                            onClick={() => handleDeleteCategory(category.categoryID)}
+                            className="delete-btn"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" style={{textAlign: 'center', padding: '20px'}}>
+                        {isLoading ? 'Loading categories...' : 'No categories found. Add your first category!'}
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
@@ -540,13 +593,7 @@ const ProductManager = () => {
             />
             <select
               value={formData.category}
-              onChange={(e) => {
-                setFormData({ 
-                  ...formData, 
-                  category: e.target.value,
-                  subcategory: "" // Reset subcategory when category changes
-                });
-              }}
+              onChange={handleCategoryChange}
             >
               <option value="">Select Category</option>
               {categories.map(cat => (
@@ -625,14 +672,6 @@ const ProductManager = () => {
               onChange={(e) => setNewCategoryData({ ...newCategoryData, description: e.target.value })}
               rows={3}
             />
-            <div className="form-group">
-              <label>Category Image:</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setNewCategoryData({ ...newCategoryData, image: e.target.files[0] })}
-              />
-            </div>
             <div className="modal-actions">
               <button onClick={handleAddCategory}>Add Category</button>
               <button onClick={() => setShowAddCategoryForm(false)}>Cancel</button>

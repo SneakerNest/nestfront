@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   ShoppingCart,
   Heart,
@@ -16,8 +17,24 @@ import { Link } from "react-router-dom";
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
-  const [searchValue, setSearchValue] = useState(""); // ✅ NEW
+  const [searchValue, setSearchValue] = useState("");
+  const [categories, setCategories] = useState([]); // ✅ NEW
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('/store/categories');
+        // Filter to only parent categories (no subcategories)
+        const parentCategories = response.data.filter(cat => !cat.parentCategoryID);
+        setCategories(parentCategories);
+      } catch (error) {
+        console.error("Error fetching categories for navbar:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const toggleSidebar = () => setShowSidebar(!showSidebar);
   const toggleCategories = () => setShowCategories(!showCategories);
@@ -104,10 +121,16 @@ const Navbar = () => {
           </li>
           {showCategories && (
             <ul className="ml-4 mt-2 space-y-2 text-sm text-gray-700">
-              <li className="hover:text-red-600 cursor-pointer" onClick={() => navigate('/sneakers')}>Sneakers</li>
-              <li className="hover:text-red-600 cursor-pointer" onClick={() => navigate('/casual')}>Casual</li>
-              <li className="hover:text-red-600 cursor-pointer" onClick={() => navigate('/boots')}>Boots</li>
-              <li className="hover:text-red-600 cursor-pointer" onClick={() => navigate('/slippers-sandals')}>Slippers & Sandals</li>
+              {categories.map(category => (
+                <li key={category.categoryID}>
+                  <Link 
+                    to={`/category/${category.categoryID}`}
+                    className="hover:text-red-600 cursor-pointer"
+                  >
+                    {category.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           )}
         </ul>

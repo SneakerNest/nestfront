@@ -1,5 +1,6 @@
 // src/components/MainMenu.js
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -11,6 +12,12 @@ import { verifyToken } from "../services/authService";
 import hero1 from "../assets/hero2.jpg";
 import hero2 from "../assets/hero1.jpg";
 import hero3 from "../assets/hero3.jpg";
+
+import dunkpurple from "../assets/dunkpurple.jpg";
+import conversered from "../assets/conversered.jpg";
+import timberlandBoots from "../assets/Timberland-6-Inch-Premium-Waterproof-Wheat-Product.avif";
+import crocsblue from "../assets/crocsblue.jpg";
+import football from "../assets/football.jpg"
 
 const sliderImages = [
   { src: hero1, alt: "Moroccan Streetwear" },
@@ -35,6 +42,25 @@ const sliderSettings = {
 };
 
 const MainMenu = () => {
+  // Add state for categories
+  const [categories, setCategories] = useState([]);
+
+  // Fetch categories when component mounts
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('/store/categories');
+        const parentCategories = response.data.filter(cat => !cat.parentCategoryID);
+        setCategories(parentCategories);
+        console.log('Fetched categories for main menu:', parentCategories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const checkAuth = async () => {
     const result = await verifyToken();
     if (result) {
@@ -65,29 +91,57 @@ const MainMenu = () => {
         </div>
       </section>
 
-      {/* CATEGORY SECTION */}
+      {/* UPDATED CATEGORY SECTION */}
       <section className="categories">
         <h2>Shop by Category</h2>
         <div className="category-grid">
-          <Link to="/sneakers" className="category">
-            <img src={require("../assets/dunkpurple.jpg")} alt="Sneakers" />
-            <h3>Sneakers</h3>
-          </Link>
-          <Link to="/casual" className="category">
-            <img src={require("../assets/conversered.jpg")} alt="Casual" />
-            <h3>Casual</h3>
-          </Link>
-          <Link to="/boots" className="category">
-            <img
-              src={require("../assets/Timberland-6-Inch-Premium-Waterproof-Wheat-Product.avif")}
-              alt="Boots"
-            />
-            <h3>Boots</h3>
-          </Link>
-          <Link to="/slippers-sandals" className="category">
-            <img src={require("../assets/crocsblue.jpg")} alt="Slippers & Sandals" />
-            <h3>Slippers & Sandals</h3>
-          </Link>
+          {categories.map(category => {
+            // Determine image source based on category name
+            let imageSrc;
+            switch(category.name) {
+              case 'Sneakers':
+                imageSrc = dunkpurple;
+                break;
+              case 'Casual':
+                imageSrc = conversered;
+                break;
+              case 'Boots':
+                imageSrc = timberlandBoots;
+                break;
+              case 'SlippersSandals':
+                imageSrc = crocsblue;
+                break;
+              case 'football':
+                // Hard-coded direct path to football.jpg
+                imageSrc = football;
+                break;
+              default:
+                // For any other new categories
+                imageSrc = `http://localhost:5001/api/v1/store/images/${category.name}.jpg`;
+            }
+            
+            return (
+              <Link 
+                key={category.categoryID} 
+                to={`/category/${category.categoryID}`} 
+                className="category"
+              >
+                <div className="category-image-container">
+                  <img 
+                    src={imageSrc}
+                    alt={category.name}
+                    className="category-image"
+                    onError={(e) => {
+                      console.log(`Error loading image for category: ${category.name}`);
+                      e.target.style.display = "none";
+                      e.target.parentNode.style.backgroundColor = "#f0f0f0";
+                    }}
+                  />
+                </div>
+                <h3>{category.name}</h3>
+              </Link>
+            );
+          })}
         </div>
       </section>
 

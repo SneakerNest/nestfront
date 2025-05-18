@@ -1,5 +1,6 @@
 // src/App.js
 import React from "react";
+import CategoryPage from "./components/CategoryPage";
 import { Routes, Route, Navigate } from "react-router-dom";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -99,6 +100,7 @@ function App() {
           <Route path="/casual" element={<CasualPage />} />
           <Route path="/boots" element={<BootsPage />} />
           <Route path="/slippers-sandals" element={<SlippersSandalsPage />} />
+          <Route path="/category/:id" element={<CategoryPage />} />
 
           {/* Default route */}
           <Route path="/" element={<Navigate to="/login" replace />} />
