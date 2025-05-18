@@ -16,6 +16,8 @@ const PaymentSection = ({ onSubmit }) => {
     onSubmit();
   };
 
+  const [saveCard, setSaveCard] = useState(false);
+
   return (
     <div className="payment-section">
       <h3>Payment Details</h3>
@@ -23,6 +25,14 @@ const PaymentSection = ({ onSubmit }) => {
       <input name="cardNumber" placeholder="Card Number" value={payment.cardNumber} onChange={handleChange} />
       <input name="expiry" placeholder="Expiry Date" value={payment.expiry} onChange={handleChange} />
       <input name="cvv" placeholder="CVV" value={payment.cvv} onChange={handleChange} />
+      <input
+        type="checkbox"
+        id="saveCard"
+        checked={saveCard}
+        onChange={() => setSaveCard(!saveCard)}
+      />
+      <label htmlFor="saveCard">Save card for future purchases</label>
+
       <button onClick={handleSubmit}>Submit Payment</button>
     </div>
   );
