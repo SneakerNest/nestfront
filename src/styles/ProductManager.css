@@ -669,4 +669,61 @@ input[type="file"] {
   margin-top: 15px;
 }
 
+/* Add these styles to highlight recently approved products */
+
+.recently-approved {
+  background-color: #f6ffed;
+  animation: pulseHighlight 2s infinite alternate;
+  border: 1px solid #b7eb8f;
+}
+
+@keyframes pulseHighlight {
+  0% { background-color: #f6ffed; }
+  100% { background-color: #d9f7be; }
+}
+
+.badge-new {
+  display: inline-block;
+  background-color: #52c41a;
+  color: white;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 8px;
+  font-weight: bold;
+  vertical-align: middle;
+  animation: pulseBadge 1s infinite alternate;
+}
+
+@keyframes pulseBadge {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+.discount-badge {
+  display: block;
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.refresh-products {
+  margin: 10px 0;
+  text-align: right;
+}
+
+.refresh-button {
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.refresh-button:hover {
+  background-color: #096dd9;
+}
+
 

@@ -2,25 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/ProductManager.css";
 
-const categories = [
-  {
-    name: 'Sneakers',
-    subcategories: ['Converse', 'Nike', 'Adidas', 'Balenciaga', 'McQueen']
-  },
-  {
-    name: 'Casual',
-    subcategories: ['Balenciaga', 'McQueen', 'Newbalance']
-  },
-  {
-    name: 'Boots',
-    subcategories: ['Timberland']
-  },
-  {
-    name: 'Slippers & Sandals',
-    subcategories: ['Nike', 'Crocs', 'Champion']
-  }
-];
-
 const ProductManager = () => {
   const [activeTab, setActiveTab] = useState("stock");
   const [orders, setOrders] = useState([]);
@@ -37,6 +18,7 @@ const ProductManager = () => {
     description: ""
   });
   const [pendingProducts, setPendingProducts] = useState([]);
+  const [recentlyApproved, setRecentlyApproved] = useState([]);
   const [deliveryData, setDeliveryData] = useState([]);
 
   const [formData, setFormData] = useState({
@@ -50,23 +32,51 @@ const ProductManager = () => {
     status: "pending"
   });
 
+  // Update the useEffect for tab switching
+  useEffect(() => {
+    const refreshTabData = async () => {
+      setIsLoading(true);
+      try {
+        if (activeTab === "stock") {
+          // Always refresh products when switching to stock tab
+          console.log("Switching to stock tab - refreshing products");
+          await fetchRecentlyApprovedProducts(); // Get fresh approved products first
+          await fetchProducts();
+        } else if (activeTab === "pendingProducts") {
+          await fetchPendingProducts();
+        } else if (activeTab === "orders") {
+          await fetchOrders();
+        } else if (activeTab === "reviews") {
+          await fetchPendingReviews();
+        } else if (activeTab === "deliveries") {
+          await fetchDeliveryData();
+        }
+      } catch (error) {
+        console.error("Error refreshing tab data:", error);
+        setError("Failed to refresh data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    refreshTabData();
+  }, [activeTab]);
+
+  // Initial data load
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       try {
         await fetchCategories();
+        await fetchRecentlyApprovedProducts();  // Load this first so it's available for product formatting
         await fetchProducts();
+        await fetchPendingProducts();
         await fetchOrders();
         await fetchPendingReviews();
-        
-        // Call this separately and log the result
-        console.log("About to fetch pending products...");
-        await fetchPendingProducts();
-        console.log("Finished fetching pending products");
-
         await fetchDeliveryData();
       } catch (error) {
         setError("Failed to load data");
+        console.error("Error loading initial data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -75,36 +85,155 @@ const ProductManager = () => {
     loadData();
   }, []);
 
-  const fetchProducts = async () => {
+  // Update fetchRecentlyApprovedProducts to return the data
+  const fetchRecentlyApprovedProducts = async () => {
     try {
-      const [sneakers, casual, boots, slippers] = await Promise.all([
-        axios.get('/store/categories/1/all-products'),
-        axios.get('/store/categories/2/all-products'),
-        axios.get('/store/categories/3/all-products'),
-        axios.get('/store/categories/4/all-products')
-      ]);
-
-      const allProducts = [
-        ...formatProductsWithCategory(sneakers.data.products, 'Sneakers'),
-        ...formatProductsWithCategory(casual.data.products, 'Casual'),
-        ...formatProductsWithCategory(boots.data.products, 'Boots'),
-        ...formatProductsWithCategory(slippers.data.products, 'Slippers & Sandals')
-      ];
-
-      setStock(allProducts);
+      console.log("Fetching recently approved products...");
+      const response = await axios.get('/store/debug/recently-approved?nocache=' + new Date().getTime());
+      
+      if (response.data && response.data.products) {
+        const products = response.data.products;
+        console.log(`Found ${products.length} recently approved products:`, 
+          products.map(p => `${p.name} (ID: ${p.productID})`));
+        
+        setRecentlyApproved(products);
+        return products;
+      }
+      return [];
     } catch (err) {
-      console.error("Error fetching products:", err);
+      console.error("Error fetching recently approved products:", err);
+      return [];
     }
   };
 
-  const formatProductsWithCategory = (products, categoryName) => {
-    return products.map(product => ({
-      ...product,
-      category: categoryName,
-      imageUrl: product.pictures && product.pictures.length > 0 
-        ? `http://localhost:5001/api/v1/images/${product.pictures[0]}`
-        : '/placeholder.jpg'
-    }));
+  // Replace the fetchProducts function with this improved version
+
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      console.log("Fetching all products from all categories, including newly approved ones...");
+      
+      // Force refresh the recently approved products first to get the latest data
+      const recentlyApprovedList = await fetchRecentlyApprovedProducts();
+      
+      // First fetch ALL categories without filtering to parent categories only
+      const categoriesResponse = await axios.get('/store/categories?nocache=' + new Date().getTime());
+      const allCategories = categoriesResponse.data;
+      
+      // Get all unique category IDs that we need to fetch products for
+      const categoryIds = [...new Set(allCategories.map(cat => cat.categoryID))];
+      console.log(`Found ${categoryIds.length} total categories to fetch products from`);
+      
+      // Fetch products from ALL categories in parallel
+      const categoryPromises = categoryIds.map(categoryId => {
+        const categoryName = allCategories.find(c => c.categoryID === categoryId)?.name || 'Unknown';
+        return axios.get(`/store/categories/${categoryId}/all-products?nocache=${new Date().getTime()}`)
+          .then(response => ({
+            categoryName,
+            categoryId,
+            products: response.data.products || []
+          }))
+          .catch(error => {
+            console.error(`Error fetching products for category ${categoryName} (ID: ${categoryId}):`, error);
+            return { categoryName, categoryId, products: [] };
+          });
+      });
+      
+      const categoryResults = await Promise.all(categoryPromises);
+      
+      // Log all category results for debugging
+      categoryResults.forEach(result => {
+        console.log(`Category ${result.categoryName} (ID: ${result.categoryId}): ${result.products.length} products`);
+      });
+      
+      // Process products from all categories
+      let allProducts = [];
+      categoryResults.forEach(result => {
+        if (result.products && result.products.length > 0) {
+          const formattedProducts = formatProductsWithCategory(
+            result.products, 
+            result.categoryName, 
+            recentlyApprovedList
+          );
+          allProducts = [...allProducts, ...formattedProducts];
+        }
+      });
+      
+      // Also fetch products that might not be properly categorized
+      try {
+        const uncategorizedResponse = await axios.get('/store/products?nocache=' + new Date().getTime());
+        const allProductIds = new Set(allProducts.map(p => p.productID));
+        
+        // Find products that weren't already included in any category
+        const uncategorizedProducts = uncategorizedResponse.data.filter(product => 
+          product.showProduct === 1 && 
+          product.unitPrice > 0 && 
+          !allProductIds.has(product.productID)
+        );
+        
+        if (uncategorizedProducts.length > 0) {
+          console.log(`Found ${uncategorizedProducts.length} uncategorized products`);
+          const formattedUncategorized = formatProductsWithCategory(
+            uncategorizedProducts, 
+            'Uncategorized', 
+            recentlyApprovedList
+          );
+          allProducts = [...allProducts, ...formattedUncategorized];
+        }
+      } catch (err) {
+        console.error("Error fetching uncategorized products:", err);
+      }
+      
+      setStock(allProducts);
+      setIsLoading(false);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      setIsLoading(false);
+    }
+  };
+
+  // Updated function that takes recentlyApproved as parameter
+  const formatProductsWithCategory = (products, categoryName, approvedProducts) => {
+    // Use the passed approvedProducts parameter or fall back to state if not provided
+    const recentProducts = approvedProducts || recentlyApproved;
+    
+    return products.map(product => {
+      // Check if this product is in the recently approved list
+      const isNewlyApproved = recentProducts.some(
+        approved => approved.productID === product.productID
+      );
+      
+      if (isNewlyApproved) {
+        console.log(`Product ${product.name} (ID: ${product.productID}) is newly approved!`);
+      }
+      
+      // Determine the correct image URL
+      let imageUrl;
+      
+      // First check if pictures array exists and has items
+      if (product.pictures && Array.isArray(product.pictures) && product.pictures.length > 0 && product.pictures[0]) {
+        imageUrl = `http://localhost:5001/api/v1/images/${product.pictures[0]}`;
+        console.log(`Using picture from database for ${product.name}: ${imageUrl}`);
+      } 
+      // For newly approved products, use the formatted name approach
+      else {
+        imageUrl = `http://localhost:5001/api/v1/images/${formatImageName(product.name)}`;
+        console.log(`Using formatted name for ${product.name}: ${imageUrl}`);
+      }
+      
+      return {
+        ...product,
+        category: categoryName,
+        imageUrl: imageUrl,
+        isRecentlyApproved: isNewlyApproved
+      };
+    });
+  };
+
+  const formatImageName = (productName) => {
+    if (!productName) return 'placeholder.jpg';
+    // Convert to lowercase and replace spaces with underscores
+    return productName.replace(/\s+/g, '_').toLowerCase() + '.jpg';
   };
 
   const fetchOrders = async () => {
@@ -134,12 +263,9 @@ const ProductManager = () => {
       setIsLoading(true);
       const response = await axios.get('/store/categories');
       
-      // Properly structure categories with subcategories
       const mainCategories = response.data.filter(cat => !cat.parentCategoryID);
       
-      // Enhance categories with subcategories
       const enhancedCategories = mainCategories.map(mainCat => {
-        // Find all subcategories for this main category
         const subs = response.data.filter(
           sub => sub.parentCategoryID === mainCat.categoryID
         ).map(sub => sub.name);
@@ -165,28 +291,21 @@ const ProductManager = () => {
     try {
       console.log('Fetching pending products using debug route...');
       
-      // Use the debug endpoint that works
       const response = await axios.get('/store/debug/pending-products');
       console.log('Debug pending products response:', response);
       
       if (response.data && response.data.rawData) {
-        // Extract the rawData from the debug response
         const pendingData = response.data.rawData;
         console.log(`Found ${pendingData.length} pending products from debug endpoint`);
         
-        // Process products with CORRECT image paths and actual categories
         const processedProducts = await Promise.all(pendingData.map(async (product) => {
           try {
-            // 1. Get the actual category for each product
             const categoryResponse = await axios.get(`/store/product/${product.productID}/category`);
             const categoryName = categoryResponse.data.categoryName || 'Uncategorized';
             console.log(`Category for product ${product.productID}: ${categoryName}`);
             
-            // 2. Format image name exactly like f50.jpg - all lowercase with underscores
             const imageFileName = product.name.replace(/\s+/g, '_').toLowerCase();
             
-            // 3. IMPORTANT: Use the FULL correct URL path that matches your API
-            // Must match the same pattern used in formatProductsWithCategory
             const imageUrl = `http://localhost:5001/api/v1/images/${imageFileName}`;
             
             console.log(`Image URL for ${product.name}: ${imageUrl}`);
@@ -308,14 +427,11 @@ const ProductManager = () => {
 
   const handleAddProduct = async () => {
     try {
-      // Create a simple object with ALL required database fields
       const productData = {
         name: formData.name || '',
         categoryID: formData.category || '',
         description: formData.description || '',
         stock: formData.stock || 0,
-        
-        // Required database fields with defaults
         brand: formData.newSubcategory || formData.subcategory || 'Generic',
         supplierID: 1,
         material: 'Leather',
@@ -326,19 +442,17 @@ const ProductManager = () => {
         unitPrice: 0,
         discountPercentage: 0,
         color: 'Default',
-        showProduct: false,  // This is important! Set to false initially
-        status: 'pending'    // Add status field as pending
+        showProduct: false,
+        status: 'pending'
       };
       
       console.log("Sending product data:", productData);
       
-      // Convert form data to JSON request
       const response = await axios.post('/store/products/pending', productData);
       
       console.log('Product added successfully:', response.data);
       alert('Product added successfully! Waiting for price approval.');
       
-      // Reset form and refresh data
       setShowAddForm(false);
       setFormData({
         name: "",
@@ -350,7 +464,6 @@ const ProductManager = () => {
         image: null
       });
       
-      // Refresh the pending products list
       fetchPendingProducts();
     } catch (err) {
       console.error('Error details:', err);
@@ -364,18 +477,14 @@ const ProductManager = () => {
         return;
       }
       
-      // Check if the product is in pendingProducts (meaning it's a pending product)
       const isPending = pendingProducts.some(p => p.productID === productId);
       
       if (isPending) {
-        // Use the special debug endpoint for pending products
         await axios.delete(`/store/debug/pending-products/${productId}`);
       } else {
-        // Use the regular endpoint for normal products
         await axios.delete(`/store/products/${productId}`);
       }
       
-      // Update both stock and pendingProducts states
       setStock(prevStock => prevStock.filter(product => product.productID !== productId));
       setPendingProducts(prevPending => prevPending.filter(product => product.productID !== productId));
       
@@ -434,7 +543,7 @@ const ProductManager = () => {
     setFormData({
       ...formData,
       category: categoryId,
-      subcategory: '' // Reset subcategory when category changes
+      subcategory: ''
     });
   };
 
@@ -544,55 +653,137 @@ const ProductManager = () => {
           </div>
           
           <div className="product-management">
-            <h3>Products Management</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <h3>Products Management</h3>
+              <button 
+                onClick={() => {
+                  console.log('Manual refresh of products');
+                  fetchProducts();
+                }}
+                style={{ 
+                  padding: '8px 16px', 
+                  backgroundColor: '#52c41a', 
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                🔍 Check for New Products
+              </button>
+            </div>
             <button onClick={() => setShowAddForm(true)} className="add-product-btn">
               + Add Product
             </button>
-            <table className="stock-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Image</th>
-                  <th>Product</th>
-                  <th>Category</th>
-                  <th>Current Stock</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stock.map(product => (
-                  <tr key={product.productID}>
-                    <td>{product.productID}</td>
-                    <td>
-                      <img
-                        src={product.imageUrl}
-                        alt={product.name}
-                        className="product-thumbnail"
-                      />
-                    </td>
-                    <td>{product.name}</td>
-                    <td>{product.category}</td>
-                    <td>
-                      <input
-                        type="number"
-                        min="0"
-                        value={product.stock}
-                        onChange={(e) => handleStockUpdate(product.productID, e.target.value)}
-                        className="stock-input"
-                      />
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => handleDeleteProduct(product.productID)}
-                        className="delete-btn"
-                      >
-                        Delete
-                      </button>
-                    </td>
+            <div className="refresh-products" style={{ marginBottom: '15px' }}>
+              <button 
+                onClick={() => fetchProducts()} 
+                className="refresh-button"
+              >
+                🔄 Refresh All Products
+              </button>
+            </div>
+            
+            {stock.length === 0 ? (
+              <div className="no-products-message">No products found. Add your first product!</div>
+            ) : (
+              <table className="stock-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Image</th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Current Stock</th>
+                    <th>Price</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {stock.map(product => (
+                    <tr key={product.productID} className={product.isRecentlyApproved ? "recently-approved" : ""}>
+                      <td>{product.productID}</td>
+                      <td>
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="product-thumbnail"
+                          onError={(e) => {
+                            console.log(`Failed to load image: ${e.target.src}`);
+                            e.target.onerror = null;
+                            // Try the formatted name approach as a fallback
+                            if (!e.target.src.includes(formatImageName(product.name))) {
+                              e.target.src = `http://localhost:5001/api/v1/images/${formatImageName(product.name)}`;
+                              console.log(`Trying alternate image path: ${e.target.src}`);
+                            } else {
+                              e.target.src = '/placeholder.jpg';
+                            }
+                          }}
+                        />
+                      </td>
+                      <td>
+                        {product.name}
+                        {product.isRecentlyApproved && (
+                          <span className="badge-new">New</span>
+                        )}
+                      </td>
+                      <td>
+                        {product.category || 'Uncategorized'}
+                        {product.category === 'Uncategorized' && (
+                          <button
+                            onClick={async () => {
+                              try {
+                                const catResponse = await axios.get('/store/debug/product-category/' + product.productID);
+                                console.log('Category debug info:', catResponse.data);
+                                alert('Check console for category debug info');
+                              } catch (err) {
+                                console.error('Error checking category:', err);
+                              }
+                            }}
+                            style={{
+                              marginLeft: '5px',
+                              fontSize: '10px',
+                              padding: '2px 5px',
+                              background: '#ff9800',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '3px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Debug
+                          </button>
+                        )}
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          min="0"
+                          value={product.stock}
+                          onChange={(e) => handleStockUpdate(product.productID, e.target.value)}
+                          className="stock-input"
+                        />
+                      </td>
+                      <td>
+                        ${Number(product.unitPrice).toFixed(2)}
+                        {product.discountPercentage > 0 && (
+                          <span className="discount-badge">{product.discountPercentage}% off</span>
+                        )}
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => handleDeleteProduct(product.productID)}
+                          className="delete-btn"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       )}
@@ -912,12 +1103,6 @@ const ProductManager = () => {
               accept="image/*"
               onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
             />
-            <div className="pending-notice">
-              <p>
-                <i className="fas fa-info-circle"></i>
-                Product will be pending until a sales manager sets the price
-              </p>
-            </div>
             <div className="modal-actions">
               <button onClick={handleAddProduct}>Add</button>
               <button onClick={() => setShowAddForm(false)}>Cancel</button>

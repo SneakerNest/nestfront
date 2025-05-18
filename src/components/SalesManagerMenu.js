@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import ProductList from './SalesList';
+// Import the components correctly
+import SalesList from './SalesList';
 import ProfitLossChart from './ProfitLossChart';
+import PendingProductsPrice from './PendingProductsPrice';
 import '../styles/SalesManagerMenu.css';
 
 const SalesManagerMenu = () => {
@@ -23,10 +25,17 @@ const SalesManagerMenu = () => {
                 >
                     Manage Prices
                 </button>
+                <button
+                    className={activeTab === 'pending' ? 'active' : ''}
+                    onClick={() => setActiveTab('pending')}
+                >
+                    Pending Products
+                </button>
             </div>
             <div className='tab-content'>
                 {activeTab === 'chart' && <ProfitLossChart />}
-                {activeTab === 'products' && <ProductList />}
+                {activeTab === 'products' && <SalesList />}
+                {activeTab === 'pending' && <PendingProductsPrice />}
             </div>
         </div>
     );

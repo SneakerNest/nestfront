@@ -1,6 +1,6 @@
 // src/components/ProductPage.js
 import React, { useState, useEffect, useContext } from "react";
-import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as faHeartOutline } from "@fortawesome/free-regular-svg-icons";
@@ -9,6 +9,7 @@ import { CartContext } from "../context/CartContext";
 import { isUserLogged } from "../utils/auth";
 import { getAllProducts } from "../services/productService";
 import { FaInstagram, FaFacebookF, FaTiktok } from "react-icons/fa";
+import ProductCard from "./ProductCard";
 import "../styles/ProductPage.css";
 
 function ProductPage({ defaultCategory = "all" }) {
@@ -42,7 +43,6 @@ function ProductPage({ defaultCategory = "all" }) {
       try {
         setLoading(true);
         const data = await getAllProducts();
-        // Log the data to check if we're getting stock information
         console.log('Products loaded:', data);
         setProducts(Array.isArray(data) ? data : []);
         setError(null);
@@ -57,11 +57,6 @@ function ProductPage({ defaultCategory = "all" }) {
     loadProducts();
     if (externalSearch) setSearchQuery(externalSearch);
   }, [externalSearch]);
-
-  const getImageUrl = (picturePath) => {
-    if (!picturePath) return '/placeholder.jpg';
-    return `http://localhost:5001/api/v1/images/${picturePath}`;
-  };
 
   const filteredProducts = products.filter(product => {
     const matchesCategory = selectedCategory === "all" 
@@ -164,76 +159,7 @@ function ProductPage({ defaultCategory = "all" }) {
             <div className="no-products">No products found</div>
           ) : (
             sortedProducts.map((product) => (
-              <Link
-                to={`/product/${product.productID}`}
-                key={product.productID}
-                className="product-card-link"
-              >
-                <div className="product-card">
-                  {product.stock === 0 ? (
-                    <div className="stock-badge out-of-stock">Out of Stock</div>
-                  ) : product.stock < 10 ? (
-                    <div className="stock-badge">Limited Stock: {product.stock}</div>
-                  ) : null}
-
-                  <button
-                    className={`wishlist-btn ${isInWishlist(product.productID) ? "active" : ""}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (!isUserLogged()) {
-                        setShowLoginModal(true);
-                        return;
-                      }
-                      toggleWishlistItem(product);
-                    }}
-                  >
-                    <FontAwesomeIcon
-                      icon={isInWishlist(product.productID) ? faHeartSolid : faHeartOutline}
-                    />
-                  </button>
-
-                  <img
-                    src={getImageUrl(product.pictures?.[0])}
-                    alt={product.name}
-                    className="product-img"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = '/placeholder.jpg';
-                    }}
-                  />
-
-                  <h3 className="product-title">{product.name}</h3>
-
-                  <p className="product-price">
-                    ${Number(product.unitPrice).toFixed(2)}
-                  </p>
-
-                  <div className="product-actions">
-                    <select
-                      value={selectedSizes[product.productID] || ""}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                      onChange={(e) => handleSizeChange(product.productID, e.target.value)}
-                      className="size-dropdown"
-                    >
-                      <option value="">Size</option>
-                      {[36, 37, 38, 39, 40, 41, 42, 43, 44].map(size => (
-                        <option key={size} value={size}>{size}</option>
-                      ))}
-                    </select>
-
-                    <button
-                      className="add-cart-btn"
-                      onClick={(e) => handleAddToCart(product, e)}
-                      disabled={!selectedSizes[product.productID] || product.stock === 0}
-                    >
-                      {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
-                    </button>
-                  </div>
-                </div>
-              </Link>
+              <ProductCard key={product.productID} product={product} />
             ))
           )}
         </div>
@@ -291,3 +217,74 @@ function ProductPage({ defaultCategory = "all" }) {
 }
 
 export default ProductPage;
+
+// src/components/ProductCard.js
+import React from 'react';
+import { Link } from 'react-router-dom';
+import '../styles/ProductPage.css';
+
+const ProductCard = ({ product }) => {
+  const stockLabel = product.stock <= 0 
+    ? "Out of Stock" 
+    : product.stock < 5 
+      ? `Limited Stock: ${product.stock}` 
+      : null;
+  
+  const hasDiscount = product.discountPercentage > 0;
+  const discountedPrice = hasDiscount 
+    ? (product.unitPrice * (1 - product.discountPercentage / 100)).toFixed(2) 
+    : product.unitPrice.toFixed(2);
+
+  return (
+    <div className="product-card">
+      {/* Discount Badge - Show only when there's a discount */}
+      {hasDiscount && (
+        <div className="discount-badge-container">
+          <div className="discount-badge">
+            {Math.round(product.discountPercentage)}% OFF
+          </div>
+        </div>
+      )}
+
+      {/* Alternative Ribbon Style - Uncomment to use this style instead */}
+      {/* {hasDiscount && (
+        <div 
+          className="ribbon-discount" 
+          data-discount={`${Math.round(product.discountPercentage)}% OFF`}
+        />
+      )} */}
+
+      {/* Stock Badge */}
+      {stockLabel && (
+        <div className="stock-badge">{stockLabel}</div>
+      )}
+      
+      <Link to={`/product/${product.productID}`} className="product-link">
+        <img 
+          src={product.imageUrl}
+          alt={product.name}
+          className="product-img"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = '/placeholder.jpg';
+          }}
+        />
+        
+        <h3 className="product-title">{product.name}</h3>
+        
+        <div className="product-price">
+          {hasDiscount ? (
+            <>
+              <span className="original-price">${Number(product.unitPrice).toFixed(2)}</span>
+              <span className="discount-price">${discountedPrice}</span>
+            </>
+          ) : (
+            <>${discountedPrice}</>
+          )}
+        </div>
+      </Link>
+    </div>
+  );
+};
+
+export default ProductCard;
