@@ -34,3 +34,56 @@
     margin-top: 20px;
   }
   
+  .invoice-section {
+  width: 100%;
+  max-width: 900px;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 25px 30px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.invoice-section h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+.invoice-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.invoice-section li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.invoice-section li:last-child {
+  border-bottom: none;
+}
+
+.invoice-section a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.invoice-section a:hover {
+  text-decoration: underline;
+}
+
+/* Optional: If you embed PDFs */
+.invoice-section embed {
+  margin-top: 20px;
+  width: 100%;
+  height: 500px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
