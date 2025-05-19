@@ -21,31 +21,34 @@ const InvoiceList = () => {
             const now = new Date();
             let startDate, endDate;
             
+            // Determine date range based on filter selection
             if (selectedMonth === 'current') {
-                // Current month
+                // Current month - from 1st of current month to last day of current month
                 startDate = new Date(now.getFullYear(), now.getMonth(), 1);
                 endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
             } else if (selectedMonth === 'previous') {
-                // Previous month
+                // Previous month - from 1st of previous month to last day of previous month
                 startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
                 endDate = new Date(now.getFullYear(), now.getMonth(), 0);
             } else if (selectedMonth === 'last30') {
-                // Last 30 days
+                // Last 30 days - from 30 days ago to today
                 startDate = new Date(now);
                 startDate.setDate(now.getDate() - 30);
                 endDate = now;
             }
             
-            // Format dates for API
+            // Helper function to format date for API request
             const formatDate = (date) => {
                 return date.toISOString().split('T')[0];
             };
             
+            // Make API request with formatted date range
             const response = await axios.post('/order/daterange', {
                 startDate: formatDate(startDate),
                 endDate: formatDate(endDate)
             });
             
+            // Update state with fetched data
             setInvoices(response.data);
             setError(null);
         } catch (err) {
@@ -66,11 +69,12 @@ const InvoiceList = () => {
 
     const handleDownloadInvoice = async (orderId, orderNumber) => {
         try {
+            // Request invoice file as blob data
             const response = await axios.get(`/invoice/download/${orderId}`, {
                 responseType: 'blob'
             });
             
-            // Create a download link and trigger it
+            // Create a download link and trigger browser download
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
@@ -79,6 +83,7 @@ const InvoiceList = () => {
             link.click();
             link.remove();
             
+            // Show success message with auto-dismiss
             setSuccessMessage('Invoice downloaded successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
@@ -89,6 +94,7 @@ const InvoiceList = () => {
     };
 
     const handleSendInvoice = async (orderId, email) => {
+        // Validate email availability
         if (!email) {
             setError('Customer email not available.');
             setTimeout(() => setError(null), 3000);
@@ -96,6 +102,7 @@ const InvoiceList = () => {
         }
         
         try {
+            // Make API request to send invoice email
             await axios.get(`/invoice/mail/${orderId}/${email}`);
             setSuccessMessage('Invoice sent successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
@@ -106,6 +113,7 @@ const InvoiceList = () => {
         }
     };
 
+    // Format date string for display with locale-specific formatting
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return new Intl.DateTimeFormat('en-US', {
@@ -117,6 +125,7 @@ const InvoiceList = () => {
         }).format(date);
     };
 
+    // Format currency for display with USD formatting
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
@@ -124,12 +133,15 @@ const InvoiceList = () => {
         }).format(amount);
     };
 
+    // Show loading indicator while data is being fetched
     if (loading) {
         return <div className="loading-spinner">Loading invoices...</div>;
     }
 
+    // Main component render
     return (
         <div className="invoice-list-container">
+            {/* Header with title and filter controls */}
             <div className="header-actions">
                 <h2>Monthly Invoices</h2>
                 <div className="filter-controls">
@@ -148,15 +160,18 @@ const InvoiceList = () => {
                 </div>
             </div>
             
+            {/* Status messages */}
             {successMessage && <div className="success-message">{successMessage}</div>}
             {error && <div className="error-message">{error}</div>}
             
+            {/* Conditional rendering based on data availability */}
             {invoices.length === 0 ? (
                 <div className="no-invoices-message">
                     No invoices found for the selected period.
                 </div>
             ) : (
                 <div className="invoices-table-container">
+                    {/* Table to display invoice data */}
                     <table className="invoices-table">
                         <thead>
                             <tr>
@@ -169,6 +184,7 @@ const InvoiceList = () => {
                             </tr>
                         </thead>
                         <tbody>
+                            {/* Map through invoices to create table rows */}
                             {invoices.map((order) => (
                                 <tr key={order.orderID} className={`status-${order.deliveryStatus?.toLowerCase()}-row`}>
                                     <td>{order.orderNumber}</td>
@@ -184,6 +200,7 @@ const InvoiceList = () => {
                                     </td>
                                     <td className="price-column">{formatCurrency(order.totalPrice)}</td>
                                     <td className="actions-column">
+                                        {/* Action buttons for each invoice */}
                                         <button 
                                             onClick={() => handleViewInvoice(order.orderID)}
                                             className="view-btn"
