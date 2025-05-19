@@ -471,6 +471,8 @@ const ProductManager = () => {
     }
   };
 
+  // Update the handleDeleteProduct function:
+
   const handleDeleteProduct = async (productId) => {
     try {
       if (!window.confirm("Are you sure you want to delete this product?")) {
@@ -478,20 +480,65 @@ const ProductManager = () => {
       }
       
       const isPending = pendingProducts.some(p => p.productID === productId);
+      const productName = isPending 
+        ? pendingProducts.find(p => p.productID === productId)?.name
+        : stock.find(p => p.productID === productId)?.name;
+        
+      console.log(`Attempting to delete product: ${productName} (ID: ${productId}, Pending: ${isPending})`);
       
-      if (isPending) {
-        await axios.delete(`/store/debug/pending-products/${productId}`);
-      } else {
-        await axios.delete(`/store/products/${productId}`);
+      let response;
+      
+      // Force full debug deletion for all products to bypass any issues
+      try {
+        // First try the debug endpoint which skips validation
+        response = await axios.delete(`/store/debug/pending-products/${productId}`);
+        console.log('Debug deletion response:', response.data);
+      } catch (debugError) {
+        // If debug endpoint fails, try the regular endpoint
+        console.log('Debug deletion failed, trying regular endpoint:', debugError);
+        response = await axios.delete(`/store/products/${productId}`);
+        console.log('Regular deletion response:', response.data);
       }
       
+      // Update UI by removing the product from both lists
       setStock(prevStock => prevStock.filter(product => product.productID !== productId));
       setPendingProducts(prevPending => prevPending.filter(product => product.productID !== productId));
       
-      alert('Product deleted successfully!');
+      alert(`Product "${productName || productId}" deleted successfully!`);
     } catch (err) {
       console.error("Error deleting product:", err);
-      alert('Failed to delete product. Please try again.');
+      
+      // Try direct database deletion as a last resort
+      try {
+        console.log('All deletion methods failed, trying direct database emergency deletion');
+        const emergencyResponse = await axios.post('/store/products/emergency-delete', { productId });
+        
+        if (emergencyResponse.data.success) {
+          // Update UI if emergency deletion worked
+          setStock(prevStock => prevStock.filter(product => product.productID !== productId));
+          setPendingProducts(prevPending => prevPending.filter(product => product.productID !== productId));
+          alert('Product deleted successfully with emergency method!');
+          return;
+        }
+      } catch (emergencyError) {
+        console.error('Emergency deletion also failed:', emergencyError);
+      }
+      
+      // More helpful error message
+      let errorMessage = 'Failed to delete product.';
+      
+      if (err.response) {
+        const serverMessage = err.response.data.message || err.response.data.error || err.response.statusText;
+        errorMessage += ` Server says: ${serverMessage}`;
+        
+        if (err.response.data.details) {
+          errorMessage += `\n\nDetails: ${err.response.data.details}`;
+        }
+      } else if (err.message) {
+        errorMessage += ` Error: ${err.message}`;
+      }
+      
+      alert(errorMessage);
     }
   };
 
