@@ -399,3 +399,14 @@
 .discount-value {
   color: #ff4a4a;
 }
+
+/* Add this to the existing CSS */
+.notification-status {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #4caf50;
+  background-color: rgba(76, 175, 80, 0.1);
+  border-radius: 4px;
+  padding: 3px 6px;
+  text-align: center;
+}

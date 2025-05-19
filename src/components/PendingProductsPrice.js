@@ -115,8 +115,10 @@ const PendingProductsPrice = () => {
         return;
       }
       
-      // Find Football category ID
+      // Initialize footballCategoryID at the beginning of the function
       let footballCategoryID = null;
+      
+      // Find Football category ID
       try {
         const catResponse = await axios.get('/store/categories');
         const footballCategory = catResponse.data.find(
@@ -131,19 +133,42 @@ const PendingProductsPrice = () => {
         console.error('Error getting Football category ID:', err);
       }
       
-      // Always send Football category ID when approving products
-      await axios.put(`/store/products/pending/${productId}/approve`, {
+      // Approve the product
+      const approveResponse = await axios.put(`/store/products/pending/${productId}/approve`, {
         price: price,
         discountPercentage: discount,
         categoryID: footballCategoryID
       });
+      
+      // If discount is applied, send notifications
+      if (discount > 0) {
+        try {
+          const notifyResponse = await axios.post('/store/products/notify-discount', {
+            productID: productId,
+            discountPercentage: discount,
+            unitPrice: price
+          });
+          
+          const notifiedCount = notifyResponse.data.sent || 0;
+          
+          if (notifiedCount > 0) {
+            setSuccessMessage(`Product approved with ${discount}% discount. ${notifiedCount} customer(s) notified!`);
+          } else {
+            setSuccessMessage(`Product approved with ${discount}% discount. No customers to notify.`);
+          }
+        } catch (notifyErr) {
+          console.error('Error sending discount notifications:', notifyErr);
+          setSuccessMessage('Product approved with discount, but notification sending failed.');
+        }
+      } else {
+        setSuccessMessage('Product approved and price set successfully!');
+      }
       
       // Remove the approved product from the list
       setPendingProducts(prevProducts => 
         prevProducts.filter(product => product.productID !== productId)
       );
       
-      setSuccessMessage('Product approved and price set successfully! Category set to Football.');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       console.error('Error approving product:', err);

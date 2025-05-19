@@ -11,17 +11,37 @@ export const getAllProducts = async () => {
 
     const products = await response.json();
     
-    return products.map(product => ({
-      ...product,
-      unitPrice: parseFloat(product.unitPrice) || 0,
-      discountedPrice: parseFloat(product.discountedPrice) || 0,
-      imageUrl: product.pictures && product.pictures.length > 0 
-        ? `${IMAGE_URL}/${product.pictures[0]}`
-        : '/placeholder.jpg'
-    }));
+    return products.map(product => {
+      // Format image name according to the convention
+      const formatImageName = (name) => {
+        if (!name) return 'placeholder.jpg';
+        return name.replace(/\s+/g, '_').toLowerCase() + '.jpg';
+      };
+      
+      // Determine image URL in a more reliable way
+      let imageUrl;
+      
+      // First check if pictures array exists and has items
+      if (product.pictures && Array.isArray(product.pictures) && product.pictures.length > 0 && product.pictures[0]) {
+        imageUrl = `${IMAGE_URL}/${product.pictures[0]}`;
+      } 
+      // For newly added products, use the formatted name approach
+      else {
+        imageUrl = `${IMAGE_URL}/${formatImageName(product.name)}`;
+      }
+      
+      return {
+        ...product,
+        unitPrice: parseFloat(product.unitPrice) || 0,
+        discountPercentage: parseFloat(product.discountPercentage) || 0,
+        discountedPrice: parseFloat(product.discountedPrice) || 
+          ((product.unitPrice * (1 - (product.discountPercentage || 0) / 100)) || 0),
+        imageUrl: imageUrl
+      };
+    });
   } catch (error) {
     console.error('Error in getAllProducts:', error);
-    throw error;
+    return []; // Return empty array instead of throwing
   }
 };
 

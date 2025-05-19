@@ -30,6 +30,7 @@ import SalesManagerMenu from "./components/SalesManagerMenu";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { CartProvider } from './context/CartContext';
+import InvoiceView from "./components/InvoiceView";
 
 function App() {
   return (
@@ -101,6 +102,9 @@ function App() {
           <Route path="/boots" element={<BootsPage />} />
           <Route path="/slippers-sandals" element={<SlippersSandalsPage />} />
           <Route path="/category/:id" element={<CategoryPage />} />
+
+          {/* Invoice route */}
+          <Route path="/invoice/:orderId" element={<InvoiceView />} />
 
           {/* Default route */}
           <Route path="/" element={<Navigate to="/login" replace />} />

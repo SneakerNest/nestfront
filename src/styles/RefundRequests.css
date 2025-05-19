@@ -1,0 +1,305 @@
+.refund-requests-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.refund-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.status-filter {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  min-width: 180px;
+}
+
+.refresh-button {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.refresh-button:hover {
+  background-color: #0b7dda;
+}
+
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 12px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  border-left: 4px solid #155724;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 12px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  border-left: 4px solid #721c24;
+}
+
+.no-refunds-message {
+  text-align: center;
+  padding: 50px 0;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  color: #6c757d;
+  font-size: 1.2rem;
+}
+
+.refunds-table-container {
+  overflow-x: auto;
+}
+
+.refunds-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.refunds-table th,
+.refunds-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.refunds-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  border-bottom: 2px solid #ddd;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-pending {
+  background-color: #f39c12;
+  color: white;
+}
+
+.status-approved {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.status-declined {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.status-pending-row {
+  background-color: #fff8e1;
+}
+
+.status-approved-row {
+  background-color: #e8f5e9;
+}
+
+.status-declined-row {
+  background-color: #ffebee;
+}
+
+.customer-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.customer-email {
+  font-size: 12px;
+  color: #666;
+  margin-top: 3px;
+}
+
+.reason-text {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reason-text:hover {
+  white-space: normal;
+  overflow: visible;
+  max-width: none;
+  position: relative;
+  z-index: 1;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.decline-reason {
+  font-size: 12px;
+  color: #e74c3c;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+.amount-column {
+  font-weight: 600;
+  text-align: right;
+}
+
+.actions-column {
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.approve-btn,
+.decline-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.approve-btn {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.approve-btn:hover {
+  background-color: #27ae60;
+}
+
+.decline-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.decline-btn:hover {
+  background-color: #c0392b;
+}
+
+.processed-at {
+  font-size: 12px;
+  color: #777;
+  font-style: italic;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 500px;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.modal-content textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm-btn,
+.cancel-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.confirm-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.cancel-btn {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  font-size: 18px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .refund-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .filter-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .refunds-table th,
+  .refunds-table td {
+    padding: 8px;
+  }
+  
+  .actions-column {
+    flex-direction: row;
+  }
+}

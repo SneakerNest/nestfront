@@ -93,8 +93,18 @@ const ProductView = () => {
   if (!product) return <Navigate to="/product-page" replace />;
 
   const getImageUrl = (picturePath) => {
-    if (!picturePath) return '/placeholder.jpg';
-    return `http://localhost:5001/api/v1/images/${picturePath}`;
+    // First check if a direct path was provided
+    if (picturePath) return `http://localhost:5001/api/v1/images/${picturePath}`;
+    
+    // Otherwise use the formatted name approach for newly added products
+    if (product && product.name) {
+      // Format name for image URL: convert to lowercase and replace spaces with underscores
+      const formattedName = product.name.replace(/\s+/g, '_').toLowerCase() + '.jpg';
+      return `http://localhost:5001/api/v1/images/${formattedName}`;
+    }
+    
+    // Fallback to placeholder
+    return '/placeholder.jpg';
   };
 
   const handleAddToCart = () => {
@@ -163,7 +173,18 @@ const ProductView = () => {
 
       {/* Price */}
       <div className="product-price">
-        <span className="current-price">${Number(product.discountedPrice || product.unitPrice).toFixed(2)}</span>
+        {product.discountPercentage > 0 ? (
+          <>
+            {/* Show discount badge */}
+            <div className="product-discount-badge">
+              {Math.round(product.discountPercentage)}% OFF
+            </div>
+            <span className="current-price">${Number(product.discountedPrice || (product.unitPrice * (1 - product.discountPercentage / 100))).toFixed(2)}</span>
+            <span className="original-price">${Number(product.unitPrice).toFixed(2)}</span>
+          </>
+        ) : (
+          <span className="current-price">${Number(product.unitPrice).toFixed(2)}</span>
+        )}
       </div>
 
       {/* Material and Warranty Info */}

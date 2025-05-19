@@ -8,6 +8,7 @@ const SalesList = () => {
     const [error, setError] = useState(null);
     const [editingID, setEditingID] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
+    const [notificationStatus, setNotificationStatus] = useState({});
 
     // Filter state
     const [categoryFilter, setCategoryFilter] = useState('all');
@@ -87,35 +88,98 @@ const SalesList = () => {
     
     const handleSavePrice = async (product) => {
         try {
-            // Ensure price is not negative
-            if (product.unitPrice <= 0) {
-                setSuccessMessage('');
-                alert('Price must be greater than zero.');
+            setLoading(true);
+            
+            // Get the new values with proper number conversion and formatting
+            const newPrice = parseFloat(parseFloat(product.unitPrice).toFixed(2));
+            const newDiscount = parseInt(product.discountPercentage || 0);
+            
+            // Validate input
+            if (isNaN(newPrice) || newPrice <= 0) {
+                setError('Please enter a valid price greater than zero');
+                setTimeout(() => setError(null), 3000);
                 return;
             }
             
-            // Ensure discount is between 0 and 100
-            if (product.discountPercentage < 0 || product.discountPercentage > 100) {
-                setSuccessMessage('');
-                alert('Discount must be between 0 and 100%.');
-                return;
-            }
-            
-            // Update product price and discount
-            await axios.put(`/store/products/${product.productID}/price`, {
-                unitPrice: product.unitPrice,
-                discountPercentage: product.discountPercentage || 0
+            console.log('Saving product price:', {
+                productID: product.productID, 
+                price: newPrice,
+                discountPercentage: newDiscount
             });
             
-            setSuccessMessage(`Updated price for ${product.name}`);
-            setTimeout(() => setSuccessMessage(''), 3000);
+            // Update the product price in the database with proper API URL format
+            const response = await axios.put(`/store/products/${product.productID}/price`, {
+                price: newPrice,
+                discountPercentage: newDiscount
+            });
             
-            // Close edit mode
+            console.log('Price update response:', response.data);
+            
+            // Reset editing state
             setEditingID(null);
+            
+            // Check if a discount was applied or updated
+            const originalProduct = products.find(p => p.productID === product.productID);
+            const hadDiscount = parseFloat(originalProduct?.discountPercentage || 0) > 0;
+            const hasNewDiscount = newDiscount > 0;
+            
+            // Only send notifications if a discount was added or increased
+            if (hasNewDiscount && (!hadDiscount || newDiscount > originalProduct.discountPercentage)) {
+                try {
+                    console.log("Sending discount notifications for:", product.name);
+                    
+                    // Send notification to customers with this product in their wishlist
+                    const notifyResponse = await axios.post('/store/products/notify-discount', {
+                        productID: product.productID,
+                        discountPercentage: newDiscount,
+                        unitPrice: newPrice
+                    });
+                    
+                    const notifiedCount = notifyResponse.data.sent || 0;
+                    
+                    // Update the UI to show notification status
+                    setNotificationStatus(prev => ({
+                        ...prev,
+                        [product.productID]: notifiedCount > 0 
+                            ? `✅ Notified ${notifiedCount} customers`
+                            : '✓ No customers to notify'
+                    }));
+                    
+                    setSuccessMessage(`Price updated and ${notifiedCount} customer(s) notified about the discount`);
+                } catch (notifyErr) {
+                    console.error('Error sending discount notifications:', notifyErr);
+                    setNotificationStatus(prev => ({
+                        ...prev,
+                        [product.productID]: '❌ Failed to send notifications'
+                    }));
+                    setSuccessMessage('Price updated but failed to send notifications');
+                }
+            } else {
+                setSuccessMessage('Product price updated successfully');
+            }
+            
+            // Refresh products list
+            fetchAllProducts();
         } catch (err) {
-            console.error('Error updating product price:', err);
-            setSuccessMessage('');
-            alert('Failed to update price. Please try again.');
+            console.error('Error updating price:', err);
+            
+            // More detailed error message
+            let errorMessage = 'Failed to update product price.';
+            if (err.response) {
+                // The server responded with a status code outside of 2xx range
+                errorMessage += ` Server response: ${err.response.data.message || err.response.statusText}`;
+            } else if (err.request) {
+                // The request was made but no response was received
+                errorMessage += ' No response received from server. Check your network connection.';
+            } else {
+                // Something else happened while setting up the request
+                errorMessage += ` Error: ${err.message}`;
+            }
+            
+            setError(errorMessage);
+            setTimeout(() => setError(null), 5000);
+        } finally {
+            setLoading(false);
         }
     };
     
@@ -262,9 +326,16 @@ const SalesList = () => {
                                             </div>
                                             
                                             {(product.discountPercentage > 0) && (
-                                                <div className="price-row final">
-                                                    <span>Final: ${calculateFinalPrice(product)}</span>
-                                                </div>
+                                                <>
+                                                    <div className="price-row final">
+                                                        <span>Final: ${calculateFinalPrice(product)}</span>
+                                                    </div>
+                                                    {notificationStatus[product.productID] && (
+                                                        <div className="notification-status">
+                                                            {notificationStatus[product.productID]}
+                                                        </div>
+                                                    )}
+                                                </>
                                             )}
                                         </div>
                                         

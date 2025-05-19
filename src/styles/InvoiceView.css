@@ -1,0 +1,158 @@
+.invoice-view-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.invoice-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.print-btn,
+.download-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.print-btn {
+  background-color: #2196f3;
+  color: white;
+}
+
+.download-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.invoice-document {
+  background-color: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+
+.company-info h1 {
+  margin: 0 0 10px 0;
+  color: #e60023;
+}
+
+.company-info p {
+  margin: 0 0 5px 0;
+  color: #666;
+}
+
+.invoice-info h2 {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.invoice-info p {
+  margin: 0 0 5px 0;
+}
+
+.invoice-addresses {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  padding: 20px 0;
+}
+
+.billing-info,
+.shipping-info {
+  flex: 1;
+}
+
+.billing-info h3,
+.shipping-info h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.billing-info p,
+.shipping-info p {
+  margin: 0 0 5px 0;
+  color: #666;
+}
+
+.invoice-items {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+}
+
+.invoice-items th,
+.invoice-items td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.invoice-items th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.invoice-items tfoot td {
+  padding-top: 20px;
+  font-weight: 600;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.invoice-footer {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  color: #666;
+}
+
+.invoice-footer p {
+  margin: 0 0 5px 0;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none;
+  }
+  
+  .invoice-view-container {
+    padding: 0;
+  }
+  
+  .invoice-document {
+    box-shadow: none;
+    padding: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .invoice-header,
+  .invoice-addresses {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .invoice-document {
+    padding: 20px;
+  }
+}
